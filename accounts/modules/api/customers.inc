@@ -42,6 +42,23 @@ function customer_add()
 	$req = $app->request();
 	$info = $req->post();
 
+	//default values
+	global $SysPrefs;
+	$info['tax_id'] = '';	
+	$info['curr_code'] = get_company_currency();
+	$info['credit_status']  = -1;
+	$info['payment_terms'] = 4;//cash only
+	$info['discount'] = $info['pymt_discount'] = 0;
+	$info['credit_limit'] = $SysPrefs->default_credit_limit();
+	$info['sales_type'] = -1;
+
+	$info['dimension_id'] = 0;
+	$info['dimension2_id'] = 0;
+	
+	
+	
+
+
 	// Validate Required Fields
 	if(!isset($info['custname'])){
 		api_error(412, 'Customer Name is required [custname]');
