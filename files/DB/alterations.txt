@@ -1,0 +1,8 @@
+ALTER TABLE `trips` ADD `rate` DOUBLE NOT NULL AFTER `no_of_passengers` ,
+ADD `additional_kilometer_rate` DOUBLE NOT NULL AFTER `rate` ,
+ADD `minimum_kilometers` DOUBLE NOT NULL AFTER `additional_km_rate` ,
+ADD `fa_customer_id` INT NOT NULL AFTER `minimum_km` ,
+ADD INDEX ( `fa_customer_id` ) ;
+
+ALTER TABLE `customers` ADD `fa_customer_id` INT NOT NULL AFTER `address` ,
+ADD INDEX ( `fa_customer_id` ) ;
