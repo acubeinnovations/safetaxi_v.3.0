@@ -15,6 +15,9 @@ include_once($path_to_root . "/sales/includes/db/cust_trans_details_db.inc");
 include_once($path_to_root . "/sales/includes/sales_db.inc");
 include_once($path_to_root . "/sales/includes/db/sales_types_db.inc");
 include_once($path_to_root . "/admin/db/attachments_db.inc");
+
+include_once($path_to_root . "/sales/includes/db/customers_db.inc");
+
 // include_once($path_to_root . "/modules/timbrado/includes/db/comprobantes_db.php.inc");
 // include_once($path_to_root . "/modules/timbrado/includes/db/llavero_db.php.inc");
 // include_once($path_to_root . "/modules/timbrado/includes/generate/AutoFacturaCore.php.inc");
@@ -250,35 +253,35 @@ function sales_add() {
 	$req	= $app->request();
 	$info	= $req->post();
 
-	$cart									= null;
-	$cart									= new Cart($info['trans_type'], 0);
-	$cart->reference			= $info['ref'];
-	$cart->Comments				= $info['comments'];
-	$cart->document_date	= $info['order_date'];
+	$cart				= null;
+	$cart				= new Cart($info['trans_type'], 0);
+	$cart->reference		= $info['ref'];
+	$cart->Comments			= $info['comments'];
+	$cart->document_date		= $info['order_date'];
 
 	if (isset($info['payment']) && ($cart->payment != $info['payment'])) {
-		$cart->payment				= $info['payment'];
+		$cart->payment		= $info['payment'];
 		$cart->payment_terms	= get_payment_terms($info['payment']);
-		$newpayment						= true;
+		$newpayment		= true;
 	}
 
 	if ($cart->payment_terms['cash_sale']) {
 		if ($newpayment) {
 			$cart->due_date		= $cart->document_date;
-			$cart->phone			= $cart->cust_ref = $cart->delivery_address = '';
+			$cart->phone		= $cart->cust_ref = $cart->delivery_address = '';
 			$cart->ship_via		= 0;
 			$cart->deliver_to	= '';
 		}
 	} else {
-		$cart->due_date					= $info['delivery_date'];
-		$cart->cust_ref					= $info['cust_ref'];
-		$cart->deliver_to				= $info['deliver_to'];
-		$cart->delivery_address	= $info['delivery_address'];
-		$cart->phone						= $info['phone'];
-		$cart->ship_via					= $info['ship_via'];
+		$cart->due_date			= $info['delivery_date'];
+		$cart->cust_ref			= $info['cust_ref'];
+		$cart->deliver_to		= $info['deliver_to'];
+		$cart->delivery_address		= $info['delivery_address'];
+		$cart->phone			= $info['phone'];
+		$cart->ship_via			= $info['ship_via'];
 	}
 
-	$cart->Location			= $info['location'];
+	$cart->Location		= $info['location'];
 	$cart->freight_cost	= input_num('freight_cost');
 
 	if (isset($info['email'])) {
@@ -288,11 +291,11 @@ function sales_add() {
 	}
 
 	$cart->customer_id	= $info['customer_id'];
-	$cart->Branch				= $info['branch_id'];
-	$cart->sales_type		= $info['sales_type'];
+	$cart->Branch		= $info['branch_id'];
+	$cart->sales_type	= $info['sales_type'];
 
 	if ($cart->trans_type != ST_SALESORDER && $cart->trans_type != ST_SALESQUOTE) { // 2008-11-12 Joe Hunt
-		$cart->dimension_id		= $info['dimension_id'];
+		$cart->dimension_id	= $info['dimension_id'];
 		$cart->dimension2_id	= $info['dimension2_id'];
 	}
 
@@ -536,6 +539,151 @@ function can_process($info, $cart) {
 		/*if (!check_num('freight_cost', 0)) {
 			return array("passed" => false, "message" => _("The shipping cost entered is expected to be numeric."));
 		}*/
+
+		if (!is_date($info['delivery_date'])) {
+			if ($cart->trans_type == ST_SALESQUOTE) {
+				return array("passed" => false, "message" => _("The Valid date is invalid."));
+			} else {
+				return array("passed" => false, "message" => _("The delivery date is invalid."));
+			}
+		}
+
+		if (date1_greater_date2($info['order_date'], $info['delivery_date'])) {
+			if ($cart->trans_type == ST_SALESQUOTE){
+				return array("passed" => false, "message" => _("The requested valid date is before the date of the quotation."));
+			} else {
+				return array("passed" => false, "message" => _("The requested delivery date is before the date of the order."));
+			}
+		}
+	} else {
+		if (!db_has_cash_accounts()) {
+			return array("passed" => false, "message" => _("You need to define a cash account for your Sales Point."));
+		}
+	}
+
+	if (!$Refs->is_valid($info['ref'])) {
+		return array("passed" => false, "message" => _("You must enter a reference."));
+	}
+
+	if (!db_has_currency_rates($cart->customer_currency, $info['order_date'])){
+		return false;
+	}
+
+	if ($cart->get_items_total() < 0) {
+		return array("passed" => false, "message" => _("Invoice total amount cannot be less than zero."));
+	}
+
+	return array('passed' => true);
+}
+
+
+function tripinvoice_add() {
+	$app	= \Slim\Slim::getInstance('SASYS');
+	$req	= $app->request();
+	$info	= $req->post();
+
+
+	//get customer FOR SALES INVOICE
+	$customer = get_customer_n_branch($info['fa_customer_id']);
+
+	$cart				= null;
+	$cart				= new Cart(ST_SALESINVOICE, 0);
+	$cart->reference		= get_next_reference($cart->trans_type);
+	$cart->Comments			= $info['comments'];
+	$cart->document_date		= $info['order_date'];
+
+	if (isset($customer['payment']) && ($cart->payment != $customer['payment'])) {
+		$cart->payment		= $customer['payment'];
+		$cart->payment_terms	= get_payment_terms($customer['payment']);
+		$newpayment		= true;
+	}
+
+	if ($cart->payment_terms['cash_sale']) {
+		if ($newpayment) {
+			$cart->due_date		= $cart->document_date;
+			$cart->phone		= $cart->cust_ref = $cart->delivery_address = '';
+			$cart->ship_via		= 0;
+			$cart->deliver_to	= '';
+		}
+	} else {
+		$cart->due_date			= $info['delivery_date'];
+		$cart->cust_ref			= $customer['debtor_ref'];
+		$cart->deliver_to		= $customer['name']
+		$cart->delivery_address		= $customer['address'];
+		$cart->phone			= $customer['phone'];
+		$cart->ship_via			= $customer['default_ship_via'];
+	}
+
+	$cart->Location		= $customer['default_location'];
+	$cart->freight_cost	= input_num('freight_cost');
+
+	if (isset($customer['email'])) {
+		$cart->email = $customer['email'];
+	}	else {
+		$cart->email = '';
+	}
+
+	$cart->customer_id	= $customer['customer_id'];
+	$cart->Branch		= $customer['branch_id'];
+	$cart->sales_type	= $customer['sales_type'];
+	$cart->dimension_id	= $customer['dimension_id'];
+	$cart->dimension2_id	= $customer['dimension2_id'];
+
+	$stock = get_item(get_company_pref('default_item'));//default item
+	$quantity = 1;//default
+	foreach($info['items'] as $item) {
+		add_to_order($cart, $stock['stock_id'], $quantity, $item['price'], $item['discount'], $stock['description']);
+	}
+
+	$can_process = can_process_trip_invoice($info, $cart);
+	if ($can_process['passed'] == false) {
+		trigger_error(var_export($can_process, true));
+		api_error(412, $can_process['message']);
+		return;
+	}
+
+	$result = $cart->write(1);
+
+	if ($result == -1) {
+		api_error(500, 'Could Not Save to Database');
+	}else {	
+		api_success_response(json_encode(key($cart->trans_no)));
+	}
+}
+
+function can_process_trip_invoice($info, $cart) {
+	global $Refs;
+
+	if (!$info['fa_customer_id']) {
+		return array("passed" => false, "message" => _("There is no customer selected."));
+	}
+
+
+	if (!is_date($info['order_date'])) {
+		return array("passed" => false, "message" => _("The entered date is invalid."));
+	}
+
+	if ($cart->trans_type != ST_SALESORDER && $cart->trans_type != ST_SALESQUOTE && !is_date_in_fiscalyear($info['order_date'])) {
+		return array("passed" => false, "message" => _("The entered date is not in fiscal year"));
+	}
+
+	if (count($cart->line_items) == 0)	{
+		return array("passed" => false, "message" => _("You must enter at least one non empty item line."));
+	}
+
+	if ($cart->payment_terms['cash_sale'] == 0) {
+		if (strlen($info['deliver_to']) <= 1) {
+			return array("passed" => false, "message" => _("You must enter the person or company to whom delivery should be made to."));
+		}
+
+		if ($cart->trans_type != ST_SALESQUOTE && strlen($info['delivery_address']) <= 1) {
+			return array("passed" => false, "message" => _("You should enter the street address in the box provided. Orders cannot be accepted without a valid street address."));
+		}
+
+		if ($info['freight_cost'] == "") {
+			$info['freight_cost'] = price_format(0);
+		}
+
 
 		if (!is_date($info['delivery_date'])) {
 			if ($cart->trans_type == ST_SALESQUOTE) {
