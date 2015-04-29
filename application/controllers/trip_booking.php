@@ -132,6 +132,7 @@ class Trip_booking extends CI_Controller {
 					$this->session->set_userdata(array('dbSuccess'=>''));
 				}
 				$this->session->set_userdata('customer_id','');
+				//$this->session->set_userdata('fa_customer_id','');
 				$this->session->set_userdata('customer_name','');
 				$this->session->set_userdata('customer_email','');
 				$this->session->set_userdata('customer_mobile','');
@@ -327,10 +328,10 @@ class Trip_booking extends CI_Controller {
 				redirect(base_url().'front-desk/trip-booking/'.$redirect_id);
 			}else{
 				
-				
 			
 			$dbdata['customer_id']					=$this->session->userdata('customer_id');
-		
+			//$dbdata['fa_customer_id']				=	$this->session->userdata('fa_customer_id');
+
 			$tripdatetime							=$data['pick_up_date'].' '.$data['pick_up_time'];
 			$dbdata['trip_type_id']					=$this->checkFutureOrInstantTrip($tripdatetime);
 				
@@ -417,7 +418,20 @@ class Trip_booking extends CI_Controller {
 
 			$tripdatetime							=$data['pick_up_date'].' '.$data['pick_up_time'];
 			$dbdata['trip_type_id']					=$this->checkFutureOrInstantTrip($tripdatetime);
-						
+
+			$tariffs=$this->tarrif_model->selectAvailableTariff();
+			if(count($tariffs)>0){
+				if($dbdata['trip_day_night_type_id']== DAY_TRIP){
+					$dbdata['rate']=	$tariffs[0]['day_rate'];
+					$dbdata['additional_kilometer_rate']=	$tariffs[0]['additional_kilometer_day_rate'];
+				}else{
+					$dbdata['rate']=	$tariffs[0]['night_rate'];
+					$dbdata['additional_kilometer_rate']=	$tariffs[0]['additional_kilometer_night_rate'];
+				}
+				$dbdata['minimum_kilometers']=	$tariffs[0]['minimum_kilometers'];
+			}
+			
+		
 				if(isset($data['id']) && $data['id']>0){
 				$res = $this->trip_booking_model->updateTrip($dbdata,$data['id']);
 				if($res==true){
@@ -602,6 +616,7 @@ class Trip_booking extends CI_Controller {
 
 function unsetSession(){
 		$this->session->set_userdata('customer_id','');
+		//$this->session->set_userdata('fa_customer_id','');
 		$this->session->set_userdata('customer_name','');
 		$this->session->set_userdata('customer_email','');
 		$this->session->set_userdata('customer_mobile','');
@@ -629,6 +644,7 @@ function saveReccurentTrip(){
 		$dbdata['trip_status_id']			=	TRIP_STATUS_ACCEPTED;
 		$dbdata['distance_in_km_from_web']	=	$values[0]->distance_in_km_from_web;
 		$dbdata['customer_id']				=	$this->session->userdata('customer_id');
+		//$dbdata['fa_customer_id']				=	$this->session->userdata('fa_customer_id');
 		$dbdata['driver_id']				= 	$this->input->post('driver');
 		$dbdata['user_id']					= 	$this->session->userdata('id');
 
@@ -668,7 +684,19 @@ function saveReccurentTrip(){
 
 						$dbdata['trip_day_night_type_id']		= NIGHT_TRIP;
 					}					
-					
+		
+					$tariffs=$this->tarrif_model->selectAvailableTariff();
+					if(count($tariffs)>0){
+						if($dbdata['trip_day_night_type_id']== DAY_TRIP){
+							$dbdata['rate']=	$tariffs[0]['day_rate'];
+							$dbdata['additional_kilometer_rate']=	$tariffs[0]['additional_kilometer_day_rate'];
+						}else{
+							$dbdata['rate']=	$tariffs[0]['night_rate'];
+							$dbdata['additional_kilometer_rate']=	$tariffs[0]['additional_kilometer_night_rate'];
+						}
+						$dbdata['minimum_kilometers']=	$tariffs[0]['minimum_kilometers'];
+					}				
+
 					$tripdatetime							=$dbdata['pick_up_date'].' '.$dbdata['pick_up_time'];
 					$dbdata['trip_type_id']					=$this->checkFutureOrInstantTrip($tripdatetime);
 
@@ -730,7 +758,17 @@ function saveReccurentTrip(){
 
 						$dbdata['trip_day_night_type_id']		= NIGHT_TRIP;
 					}					
-					
+					$tariffs=$this->tarrif_model->selectAvailableTariff();
+					if(count($tariffs)>0){
+						if($dbdata['trip_day_night_type_id']== DAY_TRIP){
+							$dbdata['rate']=	$tariffs[0]['day_rate'];
+							$dbdata['additional_kilometer_rate']=	$tariffs[0]['additional_kilometer_day_rate'];
+						}else{
+							$dbdata['rate']=	$tariffs[0]['night_rate'];
+							$dbdata['additional_kilometer_rate']=	$tariffs[0]['additional_kilometer_night_rate'];
+						}
+						$dbdata['minimum_kilometers']=	$tariffs[0]['minimum_kilometers'];
+					}
 					$tripdatetime							=$dbdata['pick_up_date'].' '.$dbdata['pick_up_time'];
 					$dbdata['trip_type_id']					=$this->checkFutureOrInstantTrip($tripdatetime);
 
@@ -806,6 +844,8 @@ function saveReccurentTrip(){
 		}
 
 	}
+
+/*
 	public function reccurent(){
 	
 	if($data['id']==-1){
@@ -921,7 +961,7 @@ function saveReccurentTrip(){
 						}
 					}
 				}
-	}
+	}*/
 	public function tripVoucher(){
 	if($_REQUEST['startkm'] && $_REQUEST['endkm'] && $_REQUEST['trip_id']){
 	$data['start_km_reading']					=	$_REQUEST['startkm'];
