@@ -4,5 +4,4 @@ ADD `minimum_kilometers` DOUBLE NOT NULL AFTER `additional_km_rate` ,
 ADD `fa_customer_id` INT NOT NULL AFTER `minimum_km` ,
 ADD INDEX ( `fa_customer_id` ) ;
 
-ALTER TABLE `customers` ADD `fa_customer_id` INT NOT NULL AFTER `address` ,
-ADD INDEX ( `fa_customer_id` ) ;
+

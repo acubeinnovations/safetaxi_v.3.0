@@ -93,8 +93,27 @@ class Customers extends CI_Controller {
 		if(isset($res) && $res!=false){
 
 			//save customer in fa table
-			$this->load->model("account_model");
-			$fa_customer = $this->account_model->add_fa_customer($res,"C");
+			//==========================add customer==============
+			$debtor = array('custname' =>$data['name'],//customer full name
+					'cust_ref' =>$data['name'],//customer short name)
+					'address' =>'',// customer address
+					'phone' => $data['mobile'],//customer phone
+					'phone2' => $data['mobile'],//customer phone2
+					'email' => ''
+					);
+
+			$method = isset($_GET['m']) ? $_GET['m'] : 'p';
+			$action = isset($_GET['a']) ? $_GET['a'] : 'customers';
+			$record = isset($_GET['r']) ? $_GET['r'] : '';
+			$filter = isset($_GET['f']) ? $_GET['f'] : false;
+			$fa_customer = $this->fabridge->open($method, $action, $record, $filter,$debtor);
+			if($fa_customer){
+				$updtdata['fa_customer_id']== $fa_customer['debtor_no'];
+				$this->customers_model->updateCustomers($updtdata,$res);
+				//save this id in customers table- fa_customer_id
+			}
+
+			//======================================================
 			echo true;
 		}else{
 			echo false;
@@ -137,7 +156,19 @@ class Customers extends CI_Controller {
 				if($customer_id>gINVALID) {
 				$res=$this->customers_model->updateCustomers($data,$customer_id);
 					if(isset($res) && $res!=false){
-						
+						//==========================edit customer==============
+						$debtor = array('custname' =>$data['name'],//customer full name
+								'cust_ref' =>$data['name'],//customer short name)
+								'address' =>$data['address']// customer address
+								);
+
+						$method = isset($_GET['m']) ? $_GET['m'] : 't';
+						$action = isset($_GET['a']) ? $_GET['a'] : 'customers';
+						$record = isset($_GET['r']) ? $_GET['r'] : '';
+						$filter = isset($_GET['f']) ? $_GET['f'] : false;
+						$update = $this->fabridge->open($method, $action, $record, $filter,$debtor);
+
+						//======================================================
 						$this->session->set_userdata(array('dbSuccess'=>'Customer details Updated Successfully'));
 						redirect(base_url().'front-desk/customers');	
 					}
@@ -145,6 +176,30 @@ class Customers extends CI_Controller {
 				$res=$this->customers_model->addCustomer($data);
 					if(isset($res) && $res!=false  && $res>0){
 						
+						//save customer in fa table
+						//==========================add customer==============
+						$debtor = array('custname' =>$data['name'],//customer full name
+								'cust_ref' =>$data['name'],//customer short name)
+								'address' =>'',// customer address
+								'phone' => $data['mobile'],//customer phone
+								'phone2' => $data['mobile'],//customer phone2
+								'email' => ''
+								);
+
+						$method = isset($_GET['m']) ? $_GET['m'] : 'p';
+						$action = isset($_GET['a']) ? $_GET['a'] : 'customers';
+						$record = isset($_GET['r']) ? $_GET['r'] : '';
+						$filter = isset($_GET['f']) ? $_GET['f'] : false;
+						$fa_customer = $this->fabridge->open($method, $action, $record, $filter,$debtor);
+//print_r($fa_customer);exit;
+						if($fa_customer){
+							$updtdata['fa_customer_id']== $fa_customer['debtor_no'];
+							$this->customers_model->updateCustomers($updtdata,$res);
+							//save this id in customers table- fa_customer_id
+						}
+
+						//======================================================
+
 					 	$this->session->set_userdata(array('dbSuccess'=>'Customer details Added Successfully'));
 						redirect(base_url().'front-desk/customers');	
 					}
