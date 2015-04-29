@@ -57,12 +57,11 @@ class Driver extends CI_Controller {
 		$err=True;
 	 $this->form_validation->set_rules('driver_name','Name','trim|required|xss_clean');
 	
-	 $this->form_validation->set_rules('dob','Date of Birth ','trim|xss_clean');
-	
+	 
 	 $this->form_validation->set_rules('address','Permanent Address','trim|xss_clean');
-	 $this->form_validation->set_rules('district','District','trim|required|xss_clean|alpha');
-	 $this->form_validation->set_rules('state','State','trim|xss_clean');
-	 $this->form_validation->set_rules('pin_code','Pin Code','trim|xss_clean|regex_match[/^[0-9]{6}$/]');
+	 $this->form_validation->set_rules('district','District','trim|xss_clean|alpha');
+	 //$this->form_validation->set_rules('state','State','trim|xss_clean');
+	 //$this->form_validation->set_rules('pin_code','Pin Code','trim|xss_clean|regex_match[/^[0-9]{6}$/]');
 	 $this->form_validation->set_rules('mobile','Phone Number','trim|required|xss_clean|numeric]');
 	 if ($dr_id==gINVALID) {
 			$data['driver_status_id']='1';
@@ -81,9 +80,9 @@ class Driver extends CI_Controller {
 
 	 $this->form_validation->set_rules('vehicle_registration_number','Vehicle Registration Number','trim|required|xss_clean');
 	 $this->form_validation->set_rules('device_imei','Vehicle Device IMEI','trim|required|xss_clean');
-	 $this->form_validation->set_rules('device_sim_number','Device Sim Number','trim|required|xss_clean');
+	 //$this->form_validation->set_rules('device_sim_number','Device Sim Number','trim|required|xss_clean');
 	 $this->form_validation->set_rules('app_key','App Key','trim|required|xss_clean');
-	 $this->form_validation->set_rules('base_location','Base Location','trim|required|xss_clean');
+	 //$this->form_validation->set_rules('base_location','Base Location','trim|required|xss_clean');
 	 //$this->form_validation->set_rules('status_description','Status Description','trim|required|xss_clean');
 
 	//echo "<pre>"; print_r($data); echo "</pre>"; exit();
@@ -92,7 +91,7 @@ class Driver extends CI_Controller {
 	 if($this->form_validation->run()==False|| $err==False){
 		$this->mysession->set('driver_id',$dr_id);
 		$this->mysession->set('post',$data); 
-		redirect(base_url().'front-desk/driver',$data);	
+		redirect(base_url().'front-desk/driver-profile',$data);	
 	 }
 	 else{
 	
@@ -101,6 +100,30 @@ class Driver extends CI_Controller {
 			//print_r($res);
 			//$ins_id=$this->mysession->get('vehicle_id');
 			if($res>0){
+
+				//save customer in fa table
+						//==========================add customer==============
+						$debtor = array('custname' =>$data['name'],//customer full name
+								'cust_ref' =>$data['name'],//customer short name)
+								'address' =>$data['address'],// customer address
+								'phone' => $data['mobile'],//customer phone
+								'phone2' => $data['mobile'],//customer phone2
+								'email' => $data['email']
+								);
+
+						$method = isset($_GET['m']) ? $_GET['m'] : 'p';
+						$action = isset($_GET['a']) ? $_GET['a'] : 'customers';
+						$record = isset($_GET['r']) ? $_GET['r'] : '';
+						$filter = isset($_GET['f']) ? $_GET['f'] : false;
+						$fa_customer = $this->fabridge->open($method, $action, $record, $filter,$debtor);
+//print_r($fa_customer);exit;
+						if($fa_customer){
+							$updtdata['fa_customer_id']== $fa_customer['debtor_no'];
+							$this->driver_model->UpdateDriverdetails($updtdata,$res);
+							//save this id in customers table- fa_customer_id
+						}
+
+						//======================================================
 
 				$this->session->set_userdata(array('dbSuccess'=>' Added Succesfully..!'));
 				$this->session->set_userdata(array('dbError'=>''));
@@ -114,8 +137,19 @@ class Driver extends CI_Controller {
 			$res=$this->driver_model->UpdateDriverdetails($data,$dr_id);
 			
 			if($res==true){
-				//edit driver as supplier in fa 
-				//$this->account_model->edit_fa_supplier($dr_id,"DR");
+				//==========================edit customer==============
+						$debtor = array('custname' =>$data['name'],//customer full name
+								'cust_ref' =>$data['name'],//customer short name)
+								'address' =>$data['address']// customer address
+								);
+
+						$method = isset($_GET['m']) ? $_GET['m'] : 't';
+						$action = isset($_GET['a']) ? $_GET['a'] : 'customers';
+						$record = isset($_GET['r']) ? $_GET['r'] : '';
+						$filter = isset($_GET['f']) ? $_GET['f'] : false;
+						$update = $this->fabridge->open($method, $action, $record, $filter,$debtor);
+
+						//======================================================
 
 				$this->session->set_userdata(array('dbSuccess'=>' Updated Succesfully..!'));
 				$this->session->set_userdata(array('dbError'=>''));

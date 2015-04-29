@@ -158,16 +158,57 @@ $app->get('/trip-logs', function() use ($app) {
 		$dataArray['trip_start_date_time']			=	date('Y-m-d H:i:s',$srt);
 		$dataArray['trip_end_date_time']				=	date('Y-m-d H:i:s',$end);
 		$dataArray['trip_status_id']						=	TRIP_STATUS_TRIP_COMPLETED;
-		$tot																		= $app->request()->get('dt')*MINIMUM_TARIFF;
+		
 		$driver_status													=	DRIVER_STATUS_ACTIVE;
 		
 		$trips=$Trip->getDetails($id);
+		
+		$dist_from_web			=			$trips['distance_in_km_from_web'];
+		$minkm							=			$trips['minimum_kilometers'];
+		$addtnlkmrate				=			$trips['additional_kilometer_rate'];
+		$rate								=			$trips['rate'];
+		$fa_customer_id			=			$trips['fa_customer_id'];
+		$tripNarration			=			'Trip Id - '.$id;
+		$tripDate						=			$trips['pick_up_date'];
 
-		if($tot < $trips['total_amount']){
-			$dataArray['total_amount']	= $trips['total_amount'];
+		if($dataArray['distance_in_km_from_app'] > $dist_from_web){
+			$dist_for_calc=$dataArray['distance_in_km_from_app'];
 		}else{
-			$dataArray['total_amount']	= $tot;
+			$dist_for_calc=$dataArray['distance_in_km_from_web'];
 		}
+		
+		if($dist_for_calc>$minkm){
+			$adtnlkm=$dist_for_calc-$minkm;
+			$dataArray['total_amount']	= $rate+($adtnlkm*$addtnlkmrate);
+		}else{
+			$dataArray['total_amount']	= $rate;
+		}
+
+
+		//salesinvoice
+		$cart = array(
+				'fa_customer_id' => $fa_customer_id, //from customers table
+				'comments' 	=> $tripNarration,
+				'delivery_date' => $tripDate,
+				'order_date' 	=> $tripDate,
+				'items'		=> array('price' =>$dataArray['total_amount'],'discount' =>0)//trip details array
+				);
+
+		$method = isset($_GET['m']) ? $_GET['m'] : 'p';
+		$action = isset($_GET['a']) ? $_GET['a'] : 'tripinvoice';
+		$record = isset($_GET['r']) ? $_GET['r'] : '';
+		$filter = isset($_GET['f']) ? $_GET['f'] : false;
+
+		require_once dirname(__FILE__) . '/include/class/class_fabridge.php';
+		$Fabridge = new Fabridge();
+		
+		$invoice_no = $Fabridge->open($method, $action, $record, $filter,$cart);
+		if($invoice_no){
+			//update trips table with return invoice_no by trip id
+			$dataArray['invoice_no']=$invoice_no;
+		}
+
+	
 		$Trip->update($dataArray,$id);	
 		
 		$res=$Driver->changeStatus($app_key,$driver_status);		
@@ -285,7 +326,7 @@ $app->get('/user-responds', function() use ($app) {
 			$driver_id=$Driver->getDriver($app_key);
 			$driversdetails=$Driver->getDetails($app_key);
 			if($driver_id!=false){
-				$dataArray=array('driver_id'=>$driver_id['id'],'trip_status_id'=>TRIP_STATUS_ACCEPTED);
+				$dataArray=array('driver_id'=>$driver_id['id'],'trip_status_id'=>TRIP_STATUS_ACCEPTED,'fa_customer_id'=>$driversdetails['fa_customer_id']);
 				$res=$Trip->update($dataArray,$trip_id);
 				if($res==true){
 					$trips=$Trip->getDetails($trip_id);

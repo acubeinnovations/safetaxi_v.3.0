@@ -119,34 +119,10 @@ $this->mysession->delete('post');
         <div class="form-group">
 		<?php echo form_label('Enter Name','usernamelabel'); ?>
            <?php echo form_input(array('name'=>'driver_name','class'=>'form-control','id'=>'name','placeholder'=>'Enter Name','value'=>$name)); ?>
-	   <?php echo $this->form_functions->form_error_session('name', '<p class="text-red">', '</p>'); ?>
+	   <?php echo $this->form_functions->form_error_session('driver_name', '<p class="text-red">', '</p>'); ?>
         </div>
 
-	<div class="form-group">
-	<?php echo form_label('Date of Birth','usernamelabel'); ?>
-           <?php echo form_input(array('name'=>'dob','class'=>'fromdatepicker form-control' ,'placeholder'=>'Date of Birth','value'=>$dob));?>
-	   <?php echo $this->form_functions->form_error_session('dob', '<p class="text-red">', '</p>'); ?>
-        </div>
-        <div class="form-group">
-		<?php echo form_label('Blood Group','usernamelabel'); ?>
-           <?php 
-		$class="form-control";
-		$msg="Blood Group ";
-		$name="blood_group";
-		$id='blood_group';
-		$group=array('A+','A-','B+','B-','O+','O-','AB+','AB-');
-	echo $this->form_functions->populate_dropdown($name,$group,$blood_group,$class,$id,$msg);
-		   ?>
-	   <?php echo $this->form_functions->form_error_session('blood_group', '<p class="text-red">', '</p>'); ?>
-	   <p class="text-red"><?php
- if($this->session->userdata('blood group') != ''){
-	echo $this->session->userdata('blood group');
-	$this->session->set_userdata(array('blood group'=>''));
- }
-	?></p>
-        </div>
-
-
+	
 	
 	<div class="form-group">
 	<?php echo form_label('Permanent Address','usernamelabel'); ?>
@@ -158,16 +134,7 @@ $this->mysession->delete('post');
            <?php echo form_input(array('name'=>'district','class'=>'form-control','id'=>'district','placeholder'=>'District','value'=>$district)); ?>
 	   <?php echo $this->form_functions->form_error_session('district', '<p class="text-red">', '</p>'); ?>
         </div>
-	<div class="form-group">
-	<?php echo form_label('State','usernamelabel'); ?>
-           <?php echo form_input(array('name'=>'state','class'=>'form-control','id'=>'state','placeholder'=>'State','value'=>$state)); ?>
-	   <?php echo $this->form_functions->form_error_session('state', '<p class="text-red">', '</p>'); ?>
-        </div>
-	<div class="form-group">
-	<?php echo form_label('Pin Code','usernamelabel'); ?>
-           <?php echo form_input(array('name'=>'pin_code','class'=>'form-control','id'=>'pin_code','placeholder'=>'Pin Code','value'=>$pin_code)); ?>
-	   <?php echo $this->form_functions->form_error_session('pin_code', '<p class="text-red">', '</p>'); ?>
-        </div>	
+	
 
 	<div class="form-group">
 	<?php echo form_label('Mobile','usernamelabel'); ?>
@@ -200,11 +167,7 @@ $this->mysession->delete('post');
 	<?php echo $this->form_functions->form_error_session('device_imei', '<p class="text-red">', '</p>'); ?>
     </div>
 
-    <div class="form-group">
-	<?php echo form_label('Device Sim Number','usernamelabel'); ?>
-           <?php echo form_input(array('name'=>'device_sim_number','class'=>'form-control','id'=>'device_sim_number','placeholder'=>'Device Sim Number','value'=>$device_sim_number)); ?>
-	<?php echo $this->form_functions->form_error_session('device_sim_number', '<p class="text-red">', '</p>'); ?>
-    </div>
+    
 
     <div class="form-group">
 	<?php echo form_label('App Key','usernamelabel'); ?>
@@ -212,11 +175,7 @@ $this->mysession->delete('post');
 	
     </div>
 
-    <div class="form-group">
-	<?php echo form_label('Base Location','usernamelabel'); ?>
-           <?php echo form_input(array('name'=>'base_location','class'=>'form-control','id'=>'base_location','placeholder'=>'Base Location','value'=>$base_location)); ?>
-	<?php echo $this->form_functions->form_error_session('base_location', '<p class="text-red">', '</p>'); ?>
-    </div>
+    
 	<?php if(isset($driver_id) && $driver_id!=gINVALID) { ?>
 				<div class="form-group">
 				<?php 
@@ -260,113 +219,7 @@ $this->mysession->delete('post');
 
 </div>	
         </div>
-		<div class="tab-pane" id="tab_2">
-           <div class="page-outer">
-	   <fieldset class="body-border">
-		<legend class="body-head">Trip</legend><div class="form-group">
-	<div class="box-body table-responsive no-padding">
-			<table class="table table-hover table-bordered">
-				<tbody>
-					<tr>
-						<th>SlNo</th>
-					    <th>Date</th>
-					    <th>Route</th>
-						<th>Kilometers</th>
-						<th>No Of Days</th>
-						<!--<th>Releasing Place</th>-->
-						<th>Parking</th>
-						<th>Toll</th>
-						<th>State Tax</th>
-						<th>Night Halt</th>
-						<th>Fuel extra</th>
-						<th>Trip Amount</th>
-					    
-					</tr>
-					<?php	
-						$full_tot_km=$tot_parking=$tot_toll=$tot_state_tax=$tot_night_halt=$tot_fuel_extra=$tot_trip_amount=0;
-					if(isset($trips) && $trips!=false){
-						for($trip_index=0;$trip_index<count($trips);$trip_index++){
-						$tot_km=$trips[$trip_index]['end_km_reading']-$trips[$trip_index]['start_km_reading'];
-						$full_tot_km=$full_tot_km+$tot_km;
-						$tot_parking=$tot_parking+$trips[$trip_index]['parking_fees'];
-						$tot_toll=$tot_toll+$trips[$trip_index]['toll_fees'];
-						$tot_state_tax=$tot_state_tax+$trips[$trip_index]['state_tax'];
-						$tot_night_halt=$tot_night_halt+$trips[$trip_index]['night_halt_charges'];
-						$tot_fuel_extra=$tot_fuel_extra+$trips[$trip_index]['fuel_extra_charges'];
-						$tot_trip_amount=$tot_trip_amount+$trips[$trip_index]['total_trip_amount'];
-						
-						
-						$date1 = date_create($trips[$trip_index]['pick_up_date'].' '.$trips[$trip_index]['pick_up_time']);
-						$date2 = date_create($trips[$trip_index]['drop_date'].' '.$trips[$trip_index]['drop_time']);
-						
-						$diff= date_diff($date1, $date2);
-						$no_of_days=$diff->d;
-						if($no_of_days==0){
-							$no_of_days='1 Day';
-							$day=1;
-						}else{
-							$no_of_days.=' Days';
-							$day=$diff->d;
-						}
-
-						?>
-						<tr>
-							<td><?php echo $trip_index+1; ?></td>
-							<td><?php echo $trips[$trip_index]['pick_up_date']; ?></td>
-							<td><?php echo $trips[$trip_index]['pick_up_city'].' to '.$trips[$trip_index]['drop_city']; ?></td>
-							<td><?php echo $tot_km; ?></td>
-							<td><?php echo $no_of_days; ?></td>
-							<!--<td><?php //echo $trips[$trip_index]['releasing_place'];?></td>-->
-							<td><?php echo number_format($trips[$trip_index]['parking_fees'],2);?></td>
-							<td><?php echo number_format($trips[$trip_index]['toll_fees'],2); ?></td>
-							<td><?php echo number_format($trips[$trip_index]['state_tax'],2); ?></td>
-							<td><?php echo number_format($trips[$trip_index]['night_halt_charges'],2); ?></td>
-							<td><?php echo number_format($trips[$trip_index]['fuel_extra_charges'],2); ?></td>
-							<td><?php echo number_format($trips[$trip_index]['total_trip_amount'],2); ?></td>
-						
-						</tr>
-						<?php } 
-						}					
-					?>
-					<tr>
-					<td>Total</td>
-					<td></td>
-					<td></td>
-					<td><?php echo $full_tot_km; ?></td>
-					<td></td>
-					<td><?php echo number_format($tot_parking,2); ?></td>
-					<td><?php echo number_format($tot_toll,2); ?></td>
-					<td><?php echo number_format($tot_state_tax,2); ?></td>
-					<td><?php echo number_format($tot_night_halt,2); ?></td>
-					<td><?php echo number_format($tot_fuel_extra,2); ?></td>
-					<td><?php echo number_format($tot_trip_amount,2); ?></td>
-					</tr>
-					<?php //endforeach;
-					//}
-					?>
-				</tbody>
-			</table><?php //echo $page_links;?>
-		</div>
-</div>
-</fieldset>
-</div>
-        </div>
-        <div class="tab-pane" id="tab_3">
-         
-
-<div class="page-outer">
-		<iframe src="<?php echo base_url().'account/front_desk/SupplierPayment/DR'.$driver_id.'/true';?>" height="600px" width="100%">
-		<p>Browser not Support</p>
-		</iframe>
-
-</div>
-        </div>
-		<div class="tab-pane" id="tab_4">
-        		<iframe src="<?php echo base_url().'account/front_desk/DriverPaymentInquiry/DR'.$driver_id.'/true';?>" height="600px" width="100%">
-		<p>Browser not Support</p>
-		</iframe>
-        	</div>
-    </div>
+		
 </div>	
 
 

@@ -20,6 +20,9 @@ $trip_drop_date='';
 if(!isset($customer_id)){
 $customer_id='';
 }
+if(!isset($trip_id)){
+$trip_id='';
+}
 
 if(!isset($driver_id)){
 $driver_id='';
@@ -48,6 +51,7 @@ $trip_sl_no=1;
 					<tr>
 
 						<td><?php echo form_input(array('name'=>'vehicle_number','class'=>'customer form-control' ,'placeholder'=>'KL-7-AB-1234','value'=>$vehiclenumber)); ?></td>
+<td><?php echo form_input(array('name'=>'trip_id','class'=>'trip_id form-control' ,'placeholder'=>'Trip ID','value'=>$trip_id)); ?></td>
 					    <td><?php echo form_input(array('name'=>'trip_pick_date','class'=>'pickupdatepicker initialize-date-picker form-control' ,'placeholder'=>'From Date','value'=>$trip_pick_date)); ?></td>
 					    <td><?php  echo form_input(array('name'=>'trip_drop_date','class'=>'dropdatepicker initialize-date-picker form-control' ,'placeholder'=>'To Date','value'=>$trip_drop_date)); ?></td>
 						 
@@ -106,9 +110,13 @@ echo form_close();?></td>
 						$date1 = date_create($pickdate);
 						//$date2 = date_create($dropdate);
 						
-						
-					?>
-					<tr>
+					
+					if($trips[$trip_index]['distance_in_km_from_web'] > $trips[$trip_index]['distance_in_km_from_app']){
+					$background="style='background: #ccc;'";
+					}else{
+					$background="";
+					}?>
+					<tr <?php echo $background; ?>>
 						<td><?php echo ++$trip_sl_no;?></td>
 						<td><?php echo '<a target="_blank" href="'.base_url().'front-desk/trip-booking/'.$trips[$trip_index]["trip_id"].'">'.$trips[$trip_index]["trip_id"].'</a>';?></td>
 					   	<td><?php echo $trips[$trip_index]['pickup_date'].' - '.$trips[$trip_index]['pickuptime'];?></td>

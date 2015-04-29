@@ -118,13 +118,7 @@ class User extends CI_Controller {
 				$this->tarrif($param1,$param2);
 		
 		}
-		elseif($param1=='driver'){
-
-		
-		
-				$this->ShowDriverView($param2);
-		
-		}elseif($param1=='find-distance'){
+		elseif($param1=='find-distance'){
 
 		
 		
@@ -843,6 +837,16 @@ class User extends CI_Controller {
 	}
 	
 	} 
+	
+//driver search
+	if(isset($_GET['trip_id']) && $_GET['trip_id']!=null){
+	$data['trip_id']= $_GET['trip_id'];
+	if($condition==""){
+	$condition=' WHERE T.id = "'.$_GET['trip_id'].'"';
+	$parameters='?trip_id='.$_GET['trip_id'];	
+	}
+	
+	} 
 
 	//from date
 	 
@@ -1364,6 +1368,7 @@ public function profile() {
 			$this->notAuthorized();
 		}
 	}
+/*
 	public function ShowDriverView($param2) {
 		if($this->session_check()==true) {
 				$tbl=array();
@@ -1386,6 +1391,7 @@ public function profile() {
 			$this->notAuthorized();
 		}
 	}
+*/
 	
 	  public function ShowDriverList($param1,$param2) {
 	if($this->session_check()==true) {
@@ -1527,7 +1533,7 @@ public function profile() {
 		
 		
 
-			$data['app_key']=$this->makeUniqueRandomAppKey();
+			 $data['app_key']=$this->makeUniqueRandomAppKey();
 			
 			//print_r($data['trips']);exit;
 			$data['title']='Driver Profile| '.PRODUCT_NAME;

@@ -27,24 +27,7 @@ public function getDriverDetails($data){
 	}
 	}
 
-	/*public function getDrivers(){ 
-	$qry='SELECT * FROM drivers';
-	$results=$this->db->query($qry);
-	$results=$results->result_array();
-	if(count($results)>0){
-	for($i=0;$i<count($results);$i++){
-		$drivers[$results[$i]['vehicle_id']]['driver_name']=$results[$i]['name'];
-		$drivers[$results[$i]['vehicle_id']]['mobile']=$results[$i]['mobile'];
-		$drivers[$results[$i]['vehicle_id']]['from_date']=$results[$i]['from_date'];
-
-		}
-		return $drivers;
-	}else{
-		return false;
-	}
-	}*/
-
-	/**/
+	
 	public function getDrivers(){ 
 	$qry='SELECT * FROM drivers';	
 	$results=$this->db->query($qry);

@@ -132,7 +132,7 @@ class Trip_booking extends CI_Controller {
 					$this->session->set_userdata(array('dbSuccess'=>''));
 				}
 				$this->session->set_userdata('customer_id','');
-				//$this->session->set_userdata('fa_customer_id','');
+				
 				$this->session->set_userdata('customer_name','');
 				$this->session->set_userdata('customer_email','');
 				$this->session->set_userdata('customer_mobile','');
@@ -330,7 +330,7 @@ class Trip_booking extends CI_Controller {
 				
 			
 			$dbdata['customer_id']					=$this->session->userdata('customer_id');
-			//$dbdata['fa_customer_id']				=	$this->session->userdata('fa_customer_id');
+			
 
 			$tripdatetime							=$data['pick_up_date'].' '.$data['pick_up_time'];
 			$dbdata['trip_type_id']					=$this->checkFutureOrInstantTrip($tripdatetime);
@@ -616,7 +616,7 @@ class Trip_booking extends CI_Controller {
 
 function unsetSession(){
 		$this->session->set_userdata('customer_id','');
-		//$this->session->set_userdata('fa_customer_id','');
+		
 		$this->session->set_userdata('customer_name','');
 		$this->session->set_userdata('customer_email','');
 		$this->session->set_userdata('customer_mobile','');
@@ -644,7 +644,7 @@ function saveReccurentTrip(){
 		$dbdata['trip_status_id']			=	TRIP_STATUS_ACCEPTED;
 		$dbdata['distance_in_km_from_web']	=	$values[0]->distance_in_km_from_web;
 		$dbdata['customer_id']				=	$this->session->userdata('customer_id');
-		//$dbdata['fa_customer_id']				=	$this->session->userdata('fa_customer_id');
+		
 		$dbdata['driver_id']				= 	$this->input->post('driver');
 		$dbdata['user_id']					= 	$this->session->userdata('id');
 
