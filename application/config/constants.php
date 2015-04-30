@@ -18,7 +18,7 @@
 /*
  * Google API Key
  */
-define("GOOGLE_API_KEY", "AIzaSyBdctT1IHovwYwfw3RsvaSIuWl4zhMf4vA"); // Place your Google API Key
+define("GOOGLE_API_KEY", "AIzaSyBdctT1IHovwYwfw3RsvaSIuWl4zhMf4vA"); // Place your Google API Key for gcm
 
 
 
@@ -31,7 +31,7 @@ define('FILE_WRITE_MODE', 0666);
 define('DIR_READ_MODE', 0755);
 define('DIR_WRITE_MODE', 0777);
 
-define('PRODUCT_NAME','SAFE-TAXI V 2.0');
+define('PRODUCT_NAME','SAFE-TAXI V 3.0');
 
 //define('API_KEY','AIzaSyBy-tN2uOTP10IsJtJn8v5WvKh5uMYigq8');
 define('API_KEY','AIzaSyB6IdFI90rPq4tkXsN5q2vQN8oo-HUFd5o');

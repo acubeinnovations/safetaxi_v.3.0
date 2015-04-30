@@ -127,7 +127,7 @@ class Tariff extends CI_Controller {
 			$err=true;
 			}*/
 			if($err==true){
-			redirect(base_url().'front-desk/tarrif');
+			redirect(base_url().'front-desk/tariff');
 			}
 			else{ //print_r($data);exit;
 			

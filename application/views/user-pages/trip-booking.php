@@ -36,7 +36,7 @@ $count=1;
 				<!--trip-booking -start-->
 			<fieldset class="body-border">
 			<legend class="body-head">Trip<?php if($id!=gINVALID){ echo ' - '.$id; } ?></legend>
-				<div class="trip-booking"><div class="float-right"><?php if($id!=gINVALID){ ?><a href="<?php echo base_url();?>front-desk/trip-booking" class="btn btn-sm btn-info">New Trip</a><?php } ?></div>
+				<div class="trip-booking"><div  style="margin-top: -18px;" class="float-right"><?php if($id!=gINVALID){ ?><a href="<?php echo base_url();?>front-desk/trip-booking" class="btn btn-sm btn-info">New Trip</a><?php } ?></div>
 					<?php	
 						$attributes = array('autocomplete'=>'off','id'=>'trip-form');
 						 echo form_open(base_url().'trip-booking/book-trip',$attributes); ?>
@@ -253,13 +253,13 @@ $count=1;
 						</div>
 						</div>
 						</a>
-						<?php }
+						--> <?php /*}
 
 
 						}
 
 					*/
-						?>-->
+						?>
 						</div>
  					</fieldset>
 				</div>

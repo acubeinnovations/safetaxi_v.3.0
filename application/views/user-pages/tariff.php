@@ -231,6 +231,11 @@ foreach($values as $det):
 				echo '<p class="text-red">'.$this->mysession->get('Err_from_date'.$det['id']).'</p>';
 				$this->mysession->delete('Err_from_date'.$det['id']);
 			} ?>
+			<?php if($det['id']!='' && $det['id']!=gINVALID){ ?>
+			<div class="hide-me">
+			<?php echo form_input(array('name'=>'h_dtpicker','value'=>$det['from_date'])); ?>
+			</div>
+		<?php 	}?>
 			</div>
 		</td>
 		<td>

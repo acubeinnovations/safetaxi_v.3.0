@@ -66,8 +66,7 @@ class Tarrif_model extends CI_Model {
 	$month=$date[1];
 	$day=$date[2];
 	$date=$data['from_date'];
-	$date_result=$this->date_check($date);
-	if( $date_result==true ) {
+	
 	$from_unix_time = mktime(0, 0, 0, $month, $day, $year);
 	$day_before = strtotime("yesterday", $from_unix_time);
 	$formatted_date = date('Y-m-d', $day_before);
@@ -88,7 +87,7 @@ class Tarrif_model extends CI_Model {
 	$this->db->set('updated', 'NOW()', FALSE);
 	$this->db->update($tbl,$data);
 	return true;
-	}
+	
 	}
 
 	
@@ -99,8 +98,8 @@ class Tarrif_model extends CI_Model {
 	return true;
 	}
 
-	public function selectAvailableTariff(){
-	$qry='SELECT * FROM tariffs where from_date <= "'.date('Y-m-d').'" AND to_date >= "'.date('Y-m-d').'"';
+	public function selectAvailableTariff($data){
+	$qry='SELECT rate,additional_kilometer_rate,minimum_kilometers,id FROM tariffs where from_date <= '.date('Y-m-d').' AND to_date >= '.date('Y-m-d').' GROUP BY T.tariff_master_id';
 	$result=$this->db->query($qry);
 	$result=$result->result_array();
 	return $result;

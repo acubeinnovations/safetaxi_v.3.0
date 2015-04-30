@@ -10,8 +10,7 @@ class User extends CI_Controller {
 	$this->load->model('driver_model');
 	$this->load->model('customers_model');
 	$this->load->model('trip_booking_model');
-	$this->load->model('customers_model');
-    $this->load->model('tarrif_model');
+	$this->load->model('tarrif_model');
 	$this->load->model('device_model');
 	 $this->load->model('vehicle_model');
 	 $this->load->model('driver_payment_model');
@@ -71,13 +70,13 @@ class User extends CI_Controller {
 		}elseif($param1=='driver-payments'){
 		
 		
-			$this->DriverPayments($param2,$param3);
+			redirect(base_url().'front-desk');
 		
 		}
 		elseif($param1=='drivers-payments'){
 		
 		
-			$this->DriversPayments($param2);
+			redirect(base_url().'front-desk');
 		
 		}
 
@@ -1153,76 +1152,111 @@ class User extends CI_Controller {
 
 public function	Customers($param2){
 			if($this->session_check()==true) {
-				if($this->mysession->get('condition')!=null){
-						$condition=$this->mysession->get('condition');
-						if(isset($condition['like']['name']) || isset($condition['like']['mobile'])|| isset($condition['where']['customer_status_id'])){
-						}
-						else{
-						$this->mysession->delete('condition');
-						}
-						}
-			$tbl_arry=array('customer_statuses');
-	
-			for ($i=0;$i<count($tbl_arry);$i++){
-			$result=$this->user_model->getArray($tbl_arry[$i]);
-			if($result!=false){
-			$data[$tbl_arry[$i]]=$result;
-			}
-			else{
-			$data[$tbl_arry[$i]]='';
-			}
-			}
-			//print_r($data['customer_types']);exit;
-			$tbl="customers";
-			$baseurl=base_url().'front-desk/customers/';
-			$per_page=5;
-			$uriseg ='3';
-			
-			$where_arry='';
-			$like_arry='';
 
-			if((isset($_REQUEST['customer'])|| isset($_REQUEST['mobile']) || isset($_REQUEST['customer_status_id']))&& isset($_REQUEST['customer_search'])){	
-				
+
+
+			$qry="SELECT C.id AS id,C.name AS name,C.mobile AS mobile,C.address AS address,COUNT(T.id) AS tripcount, T.id AS trip_id FROM customers  AS C 
+	 LEFT JOIN trips AS T  ON T.customer_id=C.id ";
+	$condition="";
+	$parameters='';	
+	
+	if($param2==''){
+	$param2='0';
+	}
+	
+			
 				if($param2==''){
 				$param2='0';
 				}
-				if($_REQUEST['customer']!=null){
-					$data['customer']=$_REQUEST['customer'];
-					$like_arry['name']=$_REQUEST['customer'];
+				if(isset($_GET['customer']) && $_GET['customer']!=null){
+					
+					$data['customer']= $_GET['customer'];
+					if($condition==""){
+					$condition=' WHERE C.name Like "%'.$_GET['customer'].'%"';
+					$parameters='?customer='.$_GET['customer'];	
+					}
+	
+
 				}
-				if($_REQUEST['mobile']!=null){
-					$data['mobile']=$_REQUEST['mobile'];
-					$like_arry['mobile']=$_REQUEST['mobile'];
+				if(isset($_GET['mobile']) && $_GET['mobile']!=null){
+					$data['mobile']= $_GET['mobile'];
+					if($condition==""){
+					$condition=' WHERE C.mobile Like "%'.$_GET['mobile'].'%"';
+					$parameters='?mobile='.$_GET['mobile'];	
+					}
 				}
-				if($_REQUEST['customer_status_id']!=null && $_REQUEST['customer_status_id']!=gINVALID){
+				/*if($_REQUEST['customer_status_id']!=null && $_REQUEST['customer_status_id']!=gINVALID){
 				$data['customer_status_id']=$_REQUEST['customer_status_id'];
 				$where_arry['customer_status_id']=$_REQUEST['customer_status_id'];
+				}*/
+		
+				//to date starts
+				if(isset($_GET['trip_drop_date']) && $_GET['trip_drop_date']!=null && isset($_GET['trip_pick_date']) &&  $_GET['trip_pick_date']!=null){
+				$data['trip_drop_date']=$_GET['trip_drop_date'];
+				$data['trip_pick_date']=$_GET['trip_pick_date'];
+				//$date_now=date('Y-m-d H');
+				if($condition==""){
+					$condition =' WHERE T.pick_up_date >= "'.$_GET['trip_pick_date'].'" AND T.pick_up_date <="'.$_GET['trip_drop_date'].'"';
+					$parameters='?trip_pick_date='.$_GET['trip_pick_date'].'&trip_drop_date='.$_GET['trip_drop_date'];	
+				}else{
+					$condition.=' AND T.pick_up_date >= "'.$_GET['trip_pick_date'].'" AND T.pick_up_date <="'.$_GET['trip_drop_date'].'"';
+					$parameters.='&trip_pick_date='.$_GET['trip_pick_date'].'&trip_drop_date='.$_GET['trip_drop_date'];
 				}
-				
-				$this->mysession->set('condition',array("where"=>$where_arry,"like"=>$like_arry));
-			}
-			if(is_null($this->mysession->get('condition'))){
-			$this->mysession->set('condition',array("where"=>$where_arry,"like"=>$like_arry));
-			}else{
-			$search_condition=$this->mysession->get('condition');
-			if(isset($search_condition['like']['name'])){
-			$data['customer']=$search_condition['like']['name'];
-			}
-			if(isset($search_condition['like']['mobile'])){
-			$data['mobile']=$search_condition['like']['mobile'];
-			}
-			if(isset($search_condition['where']['customer_status_id'])){
-			$data['customer_status_id']=$search_condition['where']['customer_status_id'];
-			}
-			}
-						
-			$paginations=$this->mypage->paging($tbl,$per_page,$param2,$baseurl,$uriseg,$model='');
-			if($param2==''){
-				$this->mysession->delete('condition');
-			}
-			$data['page_links']=$paginations['page_links'];
-			$data['customers']=$paginations['values'];	
-				for($i=0;$i<count($data['customers']);$i++){
+	
+				}else if(isset($_GET['trip_pick_date']) && $_GET['trip_pick_date']!=null ){
+				$data['trip_pick_date']=$_GET['trip_pick_date'];
+				if($condition==""){
+					$condition =' WHERE T.pick_up_date >= "'.$_GET['trip_pick_date'].'"';
+					$parameters='?trip_pick_date='.$_GET['trip_pick_date'];	
+				}else{
+					$condition.=' AND T.pick_up_date >= "'.$_GET['trip_pick_date'].'"';
+					$parameters.='&trip_pick_date='.$_GET['trip_pick_date'];	
+				}
+	
+				}else if(isset($_GET['trip_drop_date']) && $_GET['trip_drop_date']!=null ){
+				$data['trip_drop_date']=$_GET['trip_drop_date'];
+				if($condition==""){
+					$condition =' WHERE T.pick_up_date >= "'.$_GET['trip_drop_date'].'"';
+					$parameters='?trip_drop_date='.$_GET['trip_drop_date'];	
+				}else{
+					$condition.=' AND T.pick_up_date >= "'.$_GET['trip_drop_date'].'"';
+					$parameters.='&trip_drop_date='.$_GET['trip_drop_date'];	
+				}
+	
+				}else{
+
+				if($condition==""){
+					$condition =' WHERE T.pick_up_date >= "'.date('Y-m').'-01'.'" AND T.pick_up_date <="'.date("Y-m-t", strtotime(date('Y-m-d'))).'"';
+					
+				}else{
+					$condition.=' AND T.pick_up_date >= "'.date('Y-m').'-01'.'" AND T.pick_up_date <="'.date("Y-m-t", strtotime(date('Y-m-d'))).'"';
+					
+				}
+
+
+				}
+		
+
+//	echo $qry.'<br>';
+	//echo $condition.'<br>';exit;
+	$orderby=" GROUP BY C.id ORDER BY tripcount DESC";
+	$baseurl=base_url().'front-desk/trips/';
+	$uriseg ='3';
+	
+	$p_res=$this->mypage->paging($tbl='',$per_page=10,$param2,$baseurl,$uriseg,$custom='yes',$qry.$condition.$orderby,$parameters);
+	//print_r($p_res);exit;
+
+	$data['values']=$p_res['values'];
+	$data['page_links']=$p_res['page_links'];
+	
+	if(empty($data['values'])){
+				$data['result']="No Results Found !";
+	}
+	
+	$data['trip_sl_no']=$param2; 
+	$data['customers']=$data['values'];	
+
+			/*	for($i=0;$i<count($data['customers']);$i++){
 					$id=$data['customers'][$i]['id'];
 					$availability=$this->customers_model->getCurrentStatuses($id);
 					if($availability==false){
@@ -1238,7 +1272,8 @@ public function	Customers($param2){
 				}	
 				if(isset($customer_trips) && count($customer_trips)>0){
 				$data['customer_trips']=$customer_trips;
-				}		
+				}	
+		*/	
 			if(empty($data['customers'])){
 				$data['result']="No Results Found !";
 				}

@@ -162,7 +162,10 @@ $app->get('/trip-logs', function() use ($app) {
 		$driver_status													=	DRIVER_STATUS_ACTIVE;
 		
 		$trips=$Trip->getDetails($id);
-		
+
+	//===========================================================================================
+	// FA Part Start
+
 		$dist_from_web			=			$trips['distance_in_km_from_web'];
 		$minkm							=			$trips['minimum_kilometers'];
 		$addtnlkmrate				=			$trips['additional_kilometer_rate'];
@@ -207,7 +210,8 @@ $app->get('/trip-logs', function() use ($app) {
 			//update trips table with return invoice_no by trip id
 			$dataArray['invoice_no']=$invoice_no;
 		}
-
+	//===========================================================================================
+	// FA Part Ends
 	
 		$Trip->update($dataArray,$id);	
 		

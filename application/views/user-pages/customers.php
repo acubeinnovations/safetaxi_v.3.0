@@ -21,6 +21,13 @@ $customer_status_id='';
 if(!isset($mobile)){
 $mobile='';
 }
+
+if(!isset($trip_pick_date)){
+$trip_pick_date='';
+}
+if(!isset($trip_drop_date)){
+$trip_drop_date='';
+}
 ?>
 
 <div class="page-outer">    
@@ -29,16 +36,16 @@ $mobile='';
 		
 		<div class="box-body table-responsive no-padding">
 			
-			<?php echo form_open(base_url()."front-desk/customers"); ?>
+			<form action="<?php echo base_url().'front-desk/customers'; ?>" method="get">
 			<table class="table list-trip-table no-border">
 				<tbody>
 					<tr>
 						<!--<td><?php echo form_input(array('name'=>'customer','id'=>'name','class'=>'customer form-control' ,'placeholder'=>'Customer name','value'=>$customer)); ?></td>-->
 					    <td><?php echo form_input(array('name'=>'customer','id'=>'name','class'=>'customer form-control' ,'placeholder'=>'Customer Name','value'=>$customer)); ?></td>
 					<td><?php echo form_input(array('name'=>'mobile','id'=>'mobile','class'=>'mobile form-control' ,'placeholder'=>'Mobile Number','value'=>$mobile)); ?></td>
-						<td><?php $class="form-control";
-							  $id='c_type';
-						echo $this->form_functions->populate_dropdown('customer_status_id',$customer_statuses,$customer_status_id,$class,$id,$msg="Select Customer status");?> </td>
+						
+					    <td><?php echo form_input(array('name'=>'trip_pick_date','class'=>'pickupdatepicker initialize-date-picker form-control' ,'placeholder'=>'From Date','value'=>$trip_pick_date)); ?></td>
+					    <td><?php  echo form_input(array('name'=>'trip_drop_date','class'=>'dropdatepicker initialize-date-picker form-control' ,'placeholder'=>'To Date','value'=>$trip_drop_date)); ?></td>
 						
 					    <td><?php echo form_submit("customer_search","Search","class='btn btn-primary'");
 echo form_close();?></td>
@@ -70,8 +77,8 @@ echo form_close();?></td>
 						 
 					    <th>Customer </th>
 					    <th>Contact Details</th>
-					    <th>Trip Details</th>	
-						<th>Current Status</th>	
+					    <th>Trip Count</th>	
+						
 						
 						
 					</tr>
@@ -86,8 +93,8 @@ echo form_close();?></td>
 						<?php echo $customers[$customer_index]['address']; ?>
 						</td>
 
-					    <td><?php if($customer_trips[$customers[$customer_index]['id']]!=gINVALID){ echo anchor(base_url().'front-desk/trip-booking/'.$customer_trips[$customers[$customer_index]['id']],'Trip ID :'.$customer_trips[$customers[$customer_index]['id']]); } else{ echo ''; } ?></td>
-					    <td><?php if($customer_current_statuses[$customers[$customer_index]['id']]!='NoBookings'){ echo '<span class="label label-info">'.$customer_current_statuses[$customers[$customer_index]['id']].'</span>'.br(); }else{ echo '<span class="label label-danger">'.$customer_current_statuses[$customers[$customer_index]['id']].'</span>'.br(); } ?></td>	
+					    <td><?php echo $customers[$customer_index]['tripcount']; ?></td>
+					    
 
 					</tr>
 					<?php 
