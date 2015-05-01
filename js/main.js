@@ -1287,7 +1287,7 @@ function initializeDirectionMap(trip_directions)
 			destination: dest,
 			waypoints: wps,
 			optimizeWaypoints: false,
-			travelMode: google.maps.DirectionsTravelMode.DRIVING
+			travelMode: google.maps.DirectionsTravelMode.WALKING
 			};
 
 	directionsService = new google.maps.DirectionsService();

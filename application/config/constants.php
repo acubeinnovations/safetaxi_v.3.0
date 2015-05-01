@@ -34,7 +34,7 @@ define('DIR_WRITE_MODE', 0777);
 define('PRODUCT_NAME','SAFE-TAXI V 3.0');
 
 //define('API_KEY','AIzaSyBy-tN2uOTP10IsJtJn8v5WvKh5uMYigq8');
-define('API_KEY','AIzaSyB6IdFI90rPq4tkXsN5q2vQN8oo-HUFd5o');
+define('API_KEY','AIzaSyB6IdFI90rPq4tkXsN5q2vQN8oo-HUFd5o');// for map API
 
 define('SYSTEM_ADMINISTRATOR',1);
 define('FRONT_DESK',2);

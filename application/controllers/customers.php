@@ -92,7 +92,7 @@ class Customers extends CI_Controller {
 		$res=$this->customers_model->addCustomer($data);
 		if(isset($res) && $res!=false){
 
-			//save customer in fa table
+			/*//save customer in fa table
 			//==========================add customer==============
 			$debtor = array('custname' =>$data['name'],//customer full name
 					'cust_ref' =>$data['name'],//customer short name)
@@ -113,7 +113,7 @@ class Customers extends CI_Controller {
 				//save this id in customers table- fa_customer_id
 			}
 
-			//======================================================
+			//======================================================*/
 			echo true;
 		}else{
 			echo false;

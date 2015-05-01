@@ -90,6 +90,7 @@ class Tarrif_model extends CI_Model {
 	
 	}
 
+
 	
 	public function delete_tarrifValues($id){
 	$tbl="tariffs";
@@ -98,8 +99,8 @@ class Tarrif_model extends CI_Model {
 	return true;
 	}
 
-	public function selectAvailableTariff($data){
-	$qry='SELECT rate,additional_kilometer_rate,minimum_kilometers,id FROM tariffs where from_date <= '.date('Y-m-d').' AND to_date >= '.date('Y-m-d').' GROUP BY T.tariff_master_id';
+	public function selectAvailableTariff(){
+	$qry='SELECT * FROM tariffs where from_date <= '.date('Y-m-d').' AND to_date >= '.date('Y-m-d');
 	$result=$this->db->query($qry);
 	$result=$result->result_array();
 	return $result;
