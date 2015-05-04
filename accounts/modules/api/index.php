@@ -656,6 +656,15 @@ if (assets_supported()) {
 }
 // ------------------------------- Assets -------------------------------
 
+//------------------------------trips-------------------------------------------
+// Insert Sales
+$rest->post('/tripinvoice/', function() use ($rest){
+	include_once (API_ROOT . "/sales.inc");
+	tripinvoice_add();
+
+});
+
+
 // ------------------------------- Sales Order Entry -------------------------------
 // Sales
 // Get Sales Header and Details

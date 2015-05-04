@@ -89,36 +89,6 @@ class Customers extends CI_Controller {
 					$data['customer_status_id']=CUSTOMER_ACTIVE;
 				}
 
-				
-				/*$res=$this->customers_model->addCustomer($data);
-				if(isset($res) && $res!=false){
-
-					//save customer in fa table
-					//==========================add customer==============
-					$debtor = array('custname' =>$data['name'],//customer full name
-							'cust_ref' =>$data['name'],//customer short name)
-							'address' =>'',// customer address
-							'phone' => $data['mobile'],//customer phone
-							'phone2' => $data['mobile'],//customer phone2
-							'email' => ''
-							);
-
-					$method = isset($_GET['m']) ? $_GET['m'] : 'p';
-					$action = isset($_GET['a']) ? $_GET['a'] : 'customers';
-					$record = isset($_GET['r']) ? $_GET['r'] : '';
-					$filter = isset($_GET['f']) ? $_GET['f'] : false;
-					$fa_customer = $this->fabridge->open($method, $action, $record, $filter,$debtor);
-					if($fa_customer){
-						$updtdata['fa_customer_id']== $fa_customer['debtor_no'];
-						$this->customers_model->updateCustomers($updtdata,$res);
-						//save this id in customers table- fa_customer_id
-					}
-
-					//======================================================
-					echo true;
-				}else{
-					echo false;
-				}*/
 			}
 		}
 
