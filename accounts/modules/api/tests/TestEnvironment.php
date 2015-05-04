@@ -12,7 +12,7 @@ class TestEnvironment
 	public static function client()
 	{
 		return new Client(array(
-			'base_url' => 'http://localhost:8000'
+			'base_url' => 'http://fa.local'
 		), array(
 			'request.options' => array(
 				'exceptions' => false

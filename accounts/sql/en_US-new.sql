@@ -1806,6 +1806,7 @@ INSERT INTO `0_sys_prefs` VALUES('default_credit_limit', 'glsetup.customer', 'in
 INSERT INTO `0_sys_prefs` VALUES('accumulate_shipping', 'glsetup.customer', 'tinyint', 1, '0');
 INSERT INTO `0_sys_prefs` VALUES('legal_text', 'glsetup.customer', 'tinytext', 0, '');
 INSERT INTO `0_sys_prefs` VALUES('freight_act', 'glsetup.customer', 'varchar', 15, '4430');
+INSERT INTO `0_sys_prefs` VALUES('pos_customer', 'glsetup.customer', 'int', 11,0);
 INSERT INTO `0_sys_prefs` VALUES('debtors_act', 'glsetup.sales', 'varchar', 15, '1200');
 INSERT INTO `0_sys_prefs` VALUES('default_sales_act', 'glsetup.sales', 'varchar', 15, '4010');
 INSERT INTO `0_sys_prefs` VALUES('default_sales_discount_act', 'glsetup.sales', 'varchar', 15, '4510');

@@ -29,6 +29,7 @@ function update_reference($type, $id, $reference)
     db_query($sql, "could not update reference entry");
 }
 
+
 //--------------------------------------------------------------------------------------------------
 
 function delete_reference($type, $id)
@@ -64,6 +65,7 @@ function save_next_reference($type, $reference)
 	db_query($sql, "The next transaction ref for $type could not be updated");
 }
 
+
 //--------------------------------------------------------------------------------------------------
 
 function get_next_reference($type)
@@ -75,5 +77,45 @@ function get_next_reference($type)
     $row = db_fetch_row($result);
     return $row[0];
 }
+
+
+//--------------------------------------------------------------------------------------------------
+//location wise references
+
+function update_loc_reference($type, $id, $reference,$loc_code)
+{
+    $sql = "REPLACE ".TB_PREF."refs SET reference=".db_escape($reference)
+			.", type=".db_escape($type).", id=".db_escape($id).", loc_code=".db_escape($loc_code);
+    db_query($sql, "could not update reference entry");
+}
+
+function save_loc_next_reference($loc_code,$type, $reference)
+{
+
+	$sql = "INSERT INTO ".TB_PREF."loc_refs (trans_type,loc_code,next_reference)";
+	$sql .= " VALUES (".db_escape($type).",".db_escape($loc_code).",".db_escape($reference).")";
+	$sql .= " ON DUPLICATE KEY UPDATE next_reference=VALUES(next_reference)";
+
+	db_query($sql, "The next transaction ref for $type could not be updated");
+}
+
+//--------------------------------------------------------------------------------------------------
+
+function get_loc_next_reference($loc_code,$type)
+{
+	$sql = "SELECT next_reference FROM ".TB_PREF."loc_refs";
+	$sql .= " WHERE trans_type = ".db_escape($type)." AND loc_code = ".db_escape($loc_code);
+
+    	$result = db_query($sql,"The last transaction ref for $type could not be retreived");
+
+    	$row = db_fetch_row($result);
+
+	
+    	return $row[0];
+	
+}
+
+
+
 
 ?>

@@ -18,47 +18,94 @@ page(_($help_context = "Forms Setup"));
 include($path_to_root . "/includes/ui.inc");
 
 //-------------------------------------------------------------------------------------------------
+$loc_code = get_post('loc_code');
+if (list_updated('loc_code')) {
+
+	//clear_data();
+	$_POST['loc_code'] = $loc_code;
+	$Ajax->activate('details');
+	$Ajax->activate('controls');
+}
+
 
 if (isset($_POST['setprefs'])) 
 {
 
 	$systypes = get_systypes();
+	begin_transaction();
+
+	while ($type = db_fetch($systypes)) {
+
+		save_loc_next_reference($_POST['loc_code'],$type["type_id"], $_POST['id' . $type["type_id"]]);
+	}
+
+	commit_transaction();
+	display_notification_centered(_("Forms settings have been updated."));
+
+	/*$systypes = get_systypes();
 
 	begin_transaction();
 
-    while ($type = db_fetch($systypes)) 
-    {
-    	save_next_reference($type["type_id"], $_POST['id' . $type["type_id"]]);
-    }
+	while ($type = db_fetch($systypes)) 
+	{
+		save_next_reference($type["type_id"], $_POST['id' . $type["type_id"]]);
+	}
 
-    commit_transaction();
+	commit_transaction();
 
 	display_notification_centered(_("Forms settings have been updated."));
+	*/
 }
 
+
+
 start_form();
+start_table(TABLESTYLE_NOBORDER);
+locations_list_row(_(" Select Warehouse"), 'loc_code', null, false, true);
+end_row();
+end_table();
+
+echo "<hr>";
+
+
+
+div_start('details');
+
+$refs = get_loc_references($_POST['loc_code']);
 
 start_outer_table(TABLESTYLE2);
 
-$systypes = get_systypes();
+
 table_section(1);
 
 $th = array(_("Form"), _("Next Reference"));
 table_header($th);
 $i = 0;
-while ($type = db_fetch($systypes)) 
+while ($type = db_fetch($refs)) 
 {
 	if ($i++ == ST_CUSTCREDIT)
 	{
 		table_section(2);
 		table_header($th);
-	}	
-	ref_row($systypes_array[$type["type_id"]], 'id' . $type["type_id"], '', $type["next_reference"]);
+	}
+	
+	if($type["next_reference"] == '')
+		$next_reference = 1;
+	else
+		$next_reference = $type["next_reference"];
+
+	$_POST['id' . $type["type_id"]] = $next_reference;
+	
+	ref_row($systypes_array[$type["type_id"]], 'id' . $type["type_id"]);
 }
 
 end_outer_table(1);
+div_end();
+
+div_start('controls');
 
 submit_center('setprefs', _("Update"), true, '', 'default');
+div_end();
 
 end_form(2);
 

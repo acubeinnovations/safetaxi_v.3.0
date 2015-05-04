@@ -41,7 +41,7 @@ if (isset($_SESSION['View']))
 
 $_SESSION['View'] = new Cart($_GET['trans_type'], $_GET['trans_no']);
 
-start_table(TABLESTYLE2, "width='95%'", 5);
+start_table(TABLESTYLE2, "width=95%", 5);
 
 if ($_GET['trans_type'] != ST_SALESQUOTE)
 {
@@ -56,7 +56,7 @@ if ($_GET['trans_type'] != ST_SALESQUOTE)
 
 echo "<tr valign=top><td>";
 
-start_table(TABLESTYLE, "width='95%'");
+start_table(TABLESTYLE, "width=95%");
 label_row(_("Customer Name"), $_SESSION['View']->customer_name, "class='tableheader2'",
 	"colspan=3");
 start_row();
@@ -75,7 +75,12 @@ label_cells(_("Order Currency"), $_SESSION['View']->customer_currency, "class='t
 label_cells(_("Deliver From Location"), $_SESSION['View']->location_name, "class='tableheader2'");
 end_row();
 
-label_row(_("Payment Terms"), $_SESSION['View']->payment_terms['terms'], "class='tableheader2'", "colspan=3");
+start_row();
+label_cells(_("Payment Terms"), $_SESSION['View']->payment_terms['terms'], "class='tableheader2'");
+label_cells(_("Sales Person"), $_SESSION['View']->salesman_name, "class='tableheader2'");
+end_row();
+
+//label_row(_("Payment Terms"), $_SESSION['View']->payment_terms['terms'], "class='tableheader2'", "colspan=3");
 label_row(_("Delivery Address"), nl2br($_SESSION['View']->delivery_address),
 	"class='tableheader2'", "colspan=3");
 label_row(_("Reference"), $_SESSION['View']->reference, "class='tableheader2'", "colspan=3");
@@ -197,7 +202,7 @@ if ($_SESSION['View']->so_type == 1)
 	display_note(_("This Sales Order is used as a Template."), 0, 0, "class='currentfg'");
 display_heading2(_("Line Details"));
 
-start_table(TABLESTYLE, "width='95%'");
+start_table(TABLESTYLE, "colspan=9 width=95%");
 $th = array(_("Item Code"), _("Item Description"), _("Quantity"), _("Unit"),
 	_("Price"), _("Discount"), _("Total"), _("Quantity Delivered"));
 table_header($th);

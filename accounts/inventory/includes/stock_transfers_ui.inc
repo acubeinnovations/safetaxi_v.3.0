@@ -28,11 +28,19 @@ function display_order_header(&$order)
 {
 	global $Refs;
 
-	start_outer_table(TABLESTYLE, "width='70%'");
+	start_outer_table(TABLESTYLE, "width=70%");
 
 	table_section(1);
-	
-	locations_list_row(_("From Location:"), 'FromStockLocation', null);
+
+	if($_SESSION['wa_current_user']->access == SYSTEM_ADMINISTRATOR){
+		locations_list_row(_("From Location:"), 'FromStockLocation', null);	
+	}
+	else{
+		$_POST['FromStockLocation']=$_SESSION['wa_current_user']->loc_code;
+		$loc_text = get_stock_location_text($_SESSION['wa_current_user']->loc_code);
+		label_row(_("From Location: "), $loc_text , null);
+		hidden('FromStockLocation');
+	}
 	locations_list_row(_("To Location:"), 'ToStockLocation', null);
 
 	table_section(2, "33%");
@@ -56,7 +64,7 @@ function display_transfer_items($title, &$order)
 
 	display_heading($title);
     div_start('items_table');
-	start_table(TABLESTYLE, "width='80%'");
+	start_table(TABLESTYLE, "width=80%");
 	$th = array(_("Item Code"), _("Item Description"), _("Quantity"), _("Unit"), '');
 	if ( count($order->line_items)) $th[] = '';
 	table_header($th);

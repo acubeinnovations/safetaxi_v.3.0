@@ -72,9 +72,9 @@ if (isset($_POST['submit']) && can_process())
 		'default_prompt_payment_act', 'default_inventory_act', 'default_cogs_act',
 		'default_adj_act', 'default_inv_sales_act', 'default_assembly_act', 'legal_text',
 		'past_due_days', 'default_workorder_required', 'default_dim_required',
-		'default_delivery_required', 'default_quote_valid_days', 'grn_clearing_act',
+		'default_delivery_required', 'grn_clearing_act',
 		'allow_negative_stock'=> 0, 'accumulate_shipping'=> 0,
-		'po_over_receive' => 0.0, 'po_over_charge' => 0.0, 'default_credit_limit'=>0.0
+		'po_over_receive' => 0.0, 'po_over_charge' => 0.0, 'default_credit_limit'=>0.0,'pos_customer'
 )));
 
 	display_notification(_("The general GL setup has been updated."));
@@ -91,11 +91,6 @@ table_section(1);
 
 if (get_company_pref('grn_clearing_act') === null) { // available from 2.3.1, can be not defined on pre-2.4 installations
 	set_company_pref('grn_clearing_act', 'glsetup.purchase', 'varchar', 15, 0);
-	refresh_sys_prefs();
-}
-
-if (get_company_pref('default_quote_valid_days') === null) { // available from 2.3.23, can be not defined on pre-2.4 installations
-	set_company_pref('default_quote_valid_days', 'glsetup.sales', 'smallint', 6, 30);
 	refresh_sys_prefs();
 }
 
@@ -135,7 +130,8 @@ $_POST['accumulate_shipping'] = $myrow['accumulate_shipping'];
 $_POST['default_workorder_required'] = $myrow['default_workorder_required'];
 $_POST['default_dim_required'] = $myrow['default_dim_required'];
 $_POST['default_delivery_required'] = $myrow['default_delivery_required'];
-$_POST['default_quote_valid_days'] = $myrow['default_quote_valid_days'];
+
+$_POST['pos_customer'] = $myrow['pos_customer'];
 
 //---------------
 
@@ -155,6 +151,8 @@ gl_all_accounts_list_row(_("Bank Charges Account:"), 'bank_charge_act', $_POST['
 //---------------
 
 table_section_title(_("Customers and Sales"));
+
+customer_list_row(_("POS Customer:"), 'pos_customer', $_POST['pos_customer'], 12, 12);
 
 text_row(_("Default Credit Limit:"), 'default_credit_limit', $_POST['default_credit_limit'], 12, 12);
 
@@ -176,8 +174,6 @@ gl_all_accounts_list_row(_("Sales Account:"), 'default_sales_act', null,
 gl_all_accounts_list_row(_("Sales Discount Account:"), 'default_sales_discount_act');
 
 gl_all_accounts_list_row(_("Prompt Payment Discount Account:"), 'default_prompt_payment_act');
-
-text_row(_("Quote Valid Days:"), 'default_quote_valid_days', $_POST['default_quote_valid_days'], 6, 6, '', "", _("days"));
 
 text_row(_("Delivery Required By:"), 'default_delivery_required', $_POST['default_delivery_required'], 6, 6, '', "", _("days"));
 

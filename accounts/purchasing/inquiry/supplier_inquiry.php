@@ -17,6 +17,8 @@ include_once($path_to_root . "/includes/session.inc");
 include_once($path_to_root . "/purchasing/includes/purchasing_ui.inc");
 include_once($path_to_root . "/reporting/includes/reporting.inc");
 
+
+
 if (!@$_GET['popup'])
 {
 	$js = "";
@@ -72,7 +74,7 @@ function display_supplier_summary($supplier_record)
 	$pastdue2 = _('Over') . " " . $past2 . " " . _('Days');
 	
 
-    start_table(TABLESTYLE, "width='80%'");
+    start_table(TABLESTYLE, "width=80%");
     $th = array(_("Currency"), _("Terms"), _("Current"), $nowdue,
     	$pastdue1, $pastdue2, _("Total Balance"));
 

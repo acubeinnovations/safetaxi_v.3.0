@@ -21,6 +21,46 @@ class Driver extends CI_Controller {
 	}
 	//for driver view display
 
+
+	//frontaccounting bridge functions================start========
+	//add customer in accounts table
+	public function add_fa_customer($debtor)
+	{
+		
+		$method = isset($_GET['m']) ? $_GET['m'] : 'p';
+		$action = isset($_GET['a']) ? $_GET['a'] : 'customers';
+		$record = isset($_GET['r']) ? $_GET['r'] : '';
+		$filter = isset($_GET['f']) ? $_GET['f'] : false;
+		$fa_customer = $this->fabridge->open($method, $action, $record, $filter,$debtor);
+
+		if($fa_customer){
+			return $fa_customer['debtor_no'];
+		}else{
+			return false;
+		}
+	}
+
+	//edit customer in accounts table 
+	public function edit_fa_customer($id,$debtor)
+	{
+		$driver = $this->driver_model->getDriver($id);
+		
+		if($driver['fa_customer_id'] > 0){
+			
+			$method = isset($_GET['m']) ? $_GET['m'] : 't'; // g, p, t, d => GET, POST, PUT, DELETE
+			$action = isset($_GET['a']) ? $_GET['a'] : 'customers';
+			$record = isset($_GET['r']) ? $_GET['r'] : $driver['fa_customer_id'];
+			$filter = isset($_GET['f']) ? $_GET['f'] : false;
+			$output = $this->fabridge->open($method, $action, $record, $filter, $debtor);
+
+			return 0;
+		}else{
+			return $this->add_fa_customer($debtor);
+		}
+		
+	}
+	//frontaccounting bridge functions================end========
+
 	public function driver_manage(){
 	if($this->session_check()==true) {
 	if(isset($_REQUEST['driver-submit'])){
@@ -94,36 +134,23 @@ class Driver extends CI_Controller {
 		redirect(base_url().'front-desk/driver-profile',$data);	
 	 }
 	 else{
+		//frontaccoung customer array for driver
+		$nameSplit = explode(' ',$data['name']);//short name
+		$debtor = array('custname' =>$data['name'],//customer full name
+				'cust_ref' =>$nameSplit[0],//customer short name)
+				'address' =>$data['address'],// customer address
+				'phone' => $data['mobile'],//customer phone
+				'phone2' => $data['mobile'],//customer phone2
+				'email' => $data['email']
+				);
 	
 		if($dr_id==gINVALID ){
+
+			$data['fa_customer_id'] = $this->add_fa_customer($debtor);
 			$res=$this->driver_model->addDriverdetails($data); 
-			//print_r($res);
+			
 			//$ins_id=$this->mysession->get('vehicle_id');
 			if($res>0){
-
-				//save customer in fa table
-						//==========================add customer==============
-						$debtor = array('custname' =>$data['name'],//customer full name
-								'cust_ref' =>$data['name'],//customer short name)
-								'address' =>$data['address'],// customer address
-								'phone' => $data['mobile'],//customer phone
-								'phone2' => $data['mobile'],//customer phone2
-								'email' => $data['email']
-								);
-
-						$method = isset($_GET['m']) ? $_GET['m'] : 'p';
-						$action = isset($_GET['a']) ? $_GET['a'] : 'customers';
-						$record = isset($_GET['r']) ? $_GET['r'] : '';
-						$filter = isset($_GET['f']) ? $_GET['f'] : false;
-						$fa_customer = $this->fabridge->open($method, $action, $record, $filter,$debtor);
-//print_r($fa_customer);exit;
-						if($fa_customer){
-							$updtdata['fa_customer_id']== $fa_customer['debtor_no'];
-							$this->driver_model->UpdateDriverdetails($updtdata,$res);
-							//save this id in customers table- fa_customer_id
-						}
-
-						//======================================================
 
 				$this->session->set_userdata(array('dbSuccess'=>' Added Succesfully..!'));
 				$this->session->set_userdata(array('dbError'=>''));
@@ -132,24 +159,14 @@ class Driver extends CI_Controller {
 		}
 		else{
 
-
+			$update_fa = $this->edit_fa_customer($dr_id,$debtor);		
+			if(is_numeric($update_fa) && $update_fa > 0){
+				$data['fa_customer_id'] = $update_fa;
+			}
 			
 			$res=$this->driver_model->UpdateDriverdetails($data,$dr_id);
 			
 			if($res==true){
-				//==========================edit customer==============
-						$debtor = array('custname' =>$data['name'],//customer full name
-								'cust_ref' =>$data['name'],//customer short name)
-								'address' =>$data['address']// customer address
-								);
-
-						$method = isset($_GET['m']) ? $_GET['m'] : 't';
-						$action = isset($_GET['a']) ? $_GET['a'] : 'customers';
-						$record = isset($_GET['r']) ? $_GET['r'] : '';
-						$filter = isset($_GET['f']) ? $_GET['f'] : false;
-						$update = $this->fabridge->open($method, $action, $record, $filter,$debtor);
-
-						//======================================================
 
 				$this->session->set_userdata(array('dbSuccess'=>' Updated Succesfully..!'));
 				$this->session->set_userdata(array('dbError'=>''));

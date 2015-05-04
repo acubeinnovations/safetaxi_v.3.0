@@ -29,11 +29,6 @@ function display_notification_centered($msg)
 	display_notification($msg, true);
 }
 
-function display_caption($msg)
-{
-	echo "<caption>$msg</caption>\n";
-}
-
 function display_heading($msg)
 {
 	echo "<center><span class='headingtext'>$msg</span></center>\n";	

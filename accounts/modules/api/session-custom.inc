@@ -287,6 +287,7 @@ $Editors = array();
 $Pagehelp = array();
 
 $Refs = new references();
+$LocRefs = new loc_references();
 
 // intercept all output to destroy it in case of ajax call
 register_shutdown_function('end_flush');

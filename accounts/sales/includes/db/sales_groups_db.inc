@@ -96,21 +96,21 @@ function get_area_name($id)
 }
 
 function add_salesman($salesman_name, $salesman_phone, $salesman_fax,
-	$salesman_email, $provision, $break_pt, $provision2)
+	$salesman_email, $provision, $break_pt, $provision2,$loc_code='DEF')
 {
 	$sql = "INSERT INTO ".TB_PREF."salesman (salesman_name, salesman_phone, salesman_fax, salesman_email,
-		provision, break_pt, provision2)
+		provision, break_pt, provision2,loc_code)
 		VALUES (".db_escape($salesman_name) . ", "
 		  .db_escape($salesman_phone) . ", "
 		  .db_escape($salesman_fax) . ", "
 		  .db_escape($salesman_email) . ", ".
 		$provision.", ".$break_pt.", "
-		.$provision2.")";
+		.$provision2.", ".db_escape($loc_code).")";
    	db_query($sql,"The insert of the sales person failed");
 }
 
 function update_salesman($selected_id, $salesman_name, $salesman_phone, $salesman_fax,
-	$salesman_email, $provision, $break_pt, $provision2)
+	$salesman_email, $provision, $break_pt, $provision2,$loc_code)
 {
 	$sql = "UPDATE ".TB_PREF."salesman SET salesman_name=".db_escape($salesman_name) . ",
 		salesman_phone=".db_escape($salesman_phone) . ",
@@ -118,8 +118,10 @@ function update_salesman($selected_id, $salesman_name, $salesman_phone, $salesma
 		salesman_email=".db_escape($salesman_email) . ",
 		provision=".$provision.",
 		break_pt=".$break_pt.",
+		loc_code=".db_escape($loc_code).",
 		provision2=".$provision2."
 		WHERE salesman_code = ".db_escape($selected_id);
+	//return $sql;
    	db_query($sql,"The update of the sales person failed");
 }
 
@@ -131,8 +133,9 @@ function delete_salesman($selected_id)
 
 function get_salesmen($show_inactive)
 {
-	$sql = "SELECT * FROM ".TB_PREF."salesman";
-	if (!$show_inactive) $sql .= " WHERE !inactive";
+	$sql = "SELECT sm.*,loc.location_name as warehouse FROM ".TB_PREF."salesman sm,".TB_PREF."locations loc";
+	$sql .= " WHERE sm.loc_code = loc.loc_code";
+	if (!$show_inactive) $sql .= " AND !sm.inactive";
 	return db_query($sql,"could not get sales persons");
 }
 

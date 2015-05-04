@@ -43,6 +43,8 @@ class supp_trans
 	var $credit = 0;
 	var $tax_overrides = array();		// array of taxes manually inserted during sales invoice entry
 
+	var $Location;
+
 	function supp_trans($trans_type)
 	{
 		$this->trans_type = $trans_type;

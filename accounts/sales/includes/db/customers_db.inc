@@ -83,9 +83,9 @@ function get_customer_details($customer_id, $to=null, $all=true)
 		".TB_PREF."debtors_master.credit_limit, ".TB_PREF."credit_status.dissallow_invoices, ".TB_PREF."credit_status.reason_description,
 
 		Sum(IFNULL($value,0)) AS Balance,
-		Sum(IF ((TO_DAYS('$todate') - TO_DAYS($due)) > 0,$value,0)) AS Due,
-		Sum(IF ((TO_DAYS('$todate') - TO_DAYS($due)) > $past1,$value,0)) AS Overdue1,
-		Sum(IF ((TO_DAYS('$todate') - TO_DAYS($due)) > $past2,$value,0)) AS Overdue2
+		Sum(IF ((TO_DAYS('$todate') - TO_DAYS($due)) >= 0,$value,0)) AS Due,
+		Sum(IF ((TO_DAYS('$todate') - TO_DAYS($due)) >= $past1,$value,0)) AS Overdue1,
+		Sum(IF ((TO_DAYS('$todate') - TO_DAYS($due)) >= $past2,$value,0)) AS Overdue2
 
 		FROM ".TB_PREF."debtors_master
 			 LEFT JOIN ".TB_PREF."debtor_trans trans ON 
@@ -187,36 +187,19 @@ function get_customer_by_ref($reference)
 	return db_fetch($result);
 }
 
-function get_customer_n_branch($debtor_no)
+ /* getCustomerByName Starts */
+function get_customer_by_name($name)
 {
-	$sql = "SELECT debtor.*," 
-		."b.branch_code, "
-		."b.default_ship_via, "
-		."b.default_location, "
-		."b.branch_ref, "
-		."b.br_name, "
-		."p.name as contact_name, "
-		."a.description, "
-		."p.phone, "
-		."p.fax, "
-		."p.email, "
-		."t.name AS tax_group_name, "
-		."b.inactive
-		FROM ".TB_PREF."debtors_master debtor, ".TB_PREF."cust_branch b "
-		. "LEFT JOIN ".TB_PREF."crm_contacts c
-			ON c.entity_id=b.branch_code AND c.type='cust_branch' AND c.action='general'
-			LEFT JOIN ".TB_PREF."crm_persons p on c.person_id=p.id,"
-			.TB_PREF."areas a, "
-			.TB_PREF."tax_groups t
-		WHERE b.tax_group_id=t.id
-		AND b.area=a.area_code
-		AND b.debtor_no = debtor.debtor_no
-		AND debtor.debtor_no=".db_escape($debtor_no);
-		
+       //$sql = "SELECT * FROM ".TB_PREF."debtors_master  WHERE name  LIKE '%".db_escape($name)."%'";
+       $sql = "SELECT debtor_no,name FROM ".TB_PREF."debtors_master WHERE `name` LIKE '%".$name."%'";
 
-	$result = db_query($sql,"Cannot Get Customer");
+       $result = db_query($sql, "could not get customer");
 
-	return db_fetch($result);
+       
+
+       return $result;
 }
+/* getCustomerByName Ends*/
+
 
 ?>

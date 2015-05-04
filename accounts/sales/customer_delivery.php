@@ -227,7 +227,10 @@ function copy_from_cart()
 	$_POST['dimension_id'] = $cart->dimension_id;
 	$_POST['dimension2_id'] = $cart->dimension2_id;
 	$_POST['cart_id'] = $cart->cart_id;
-	$_POST['ref'] = $cart->reference;
+	if($cart->trans_no == 0)
+		$_POST['ref'] = $cart->get_loc_ref($cart->Location);
+	else
+		$_POST['ref'] = $cart->reference;
 }
 //------------------------------------------------------------------------------
 
@@ -308,10 +311,10 @@ if (isset($_POST['Update']) || isset($_POST['_Location_update']) || isset($_POST
 start_form();
 hidden('cart_id');
 
-start_table(TABLESTYLE2, "width='80%'", 5);
+start_table(TABLESTYLE2, "width=80%", 5);
 echo "<tr><td>"; // outer table
 
-start_table(TABLESTYLE, "width='100%'");
+start_table(TABLESTYLE, "width=100%");
 start_row();
 label_cells(_("Customer"), $_SESSION['Items']->customer_name, "class='tableheader2'");
 label_cells(_("Branch"), get_branch_name($_SESSION['Items']->Branch), "class='tableheader2'");
@@ -360,7 +363,7 @@ end_table();
 
 echo "</td><td>";// outer table
 
-start_table(TABLESTYLE, "width='90%'");
+start_table(TABLESTYLE, "width=90%");
 
 if (!isset($_POST['due_date']) || !is_date($_POST['due_date'])) {
 	$_POST['due_date'] = get_invoice_duedate($_SESSION['Items']->payment, $_POST['DispatchDate']);
@@ -403,7 +406,7 @@ if ($row['dissallow_invoices'] == 1)
 }	
 display_heading(_("Delivery Items"));
 div_start('Items');
-start_table(TABLESTYLE, "width='80%'");
+start_table(TABLESTYLE, "width=80%");
 
 $new = $_SESSION['Items']->trans_no==0;
 $th = array(_("Item Code"), _("Item Description"), 
@@ -434,7 +437,7 @@ foreach ($_SESSION['Items']->line_items as $line=>$ln_itm) {
 		// (but anyway dispatch is checked again later before transaction is saved)
 
 		$qty = $ln_itm->qty_dispatched;
-		if ($check = check_negative_stock($ln_itm->stock_id, $ln_itm->qty_done-$ln_itm->qty_dispatched, $_POST['Location'], $_POST['DispatchDate']))
+		if ($check = check_negative_stock($ln_itm->stock_id, -$ln_itm->qty_dispatched, $_POST['Location'], $_POST['DispatchDate']))
 			$qty = $check['qty'];
 
 		$q_class =  hook_get_dispatchable_quantity($ln_itm, $_POST['Location'], $_POST['DispatchDate'], $qty);

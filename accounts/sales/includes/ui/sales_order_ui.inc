@@ -80,6 +80,7 @@ function get_customer_details_to_order(&$order, $customer_id, $branch_id)
 
 	$name = $myrow['name'];
 
+
 	if ($myrow['dissallow_invoices'] == 1)
 		$ret_error = _("The selected customer account is currently on hold. Please contact the credit control personnel to discuss.");
 
@@ -123,12 +124,17 @@ function get_customer_details_to_order(&$order, $customer_id, $branch_id)
 	}
 	elseif ($order->trans_type == ST_SALESORDER)
 		$order->due_date = add_days($order->document_date, $SysPrefs->default_delivery_required_by());
-	elseif ($order->trans_type == ST_SALESQUOTE)
-		$order->due_date = add_days($order->document_date, $SysPrefs->default_quote_valid_days());
 	if($order->payment_terms['cash_sale']) {
-		$order->set_location($order->pos["pos_location"], $order->pos["location_name"]);
-	} else
-		$order->set_location($myrow["default_location"], $myrow["location_name"]);
+		//$order->set_location($order->pos["pos_location"], $order->pos["location_name"]);
+		
+	} else{
+		
+		//$order->set_location($myrow["default_location"], $myrow["location_name"]);
+	}
+
+	//location for ccd
+	$location = get_item_location($order->Location);
+	$order->set_location($location["loc_code"], $location["location_name"]);
 
 	return $ret_error;
 }
@@ -141,8 +147,7 @@ function display_order_summary($title, &$order, $editable_items=false)
 	display_heading($title);
 
     div_start('items_table');
-	start_table(TABLESTYLE, "width='90%'");
-
+	start_table(TABLESTYLE, "colspan=7 width=90%");
 	$th = array(_("Item Code"), _("Item Description"), _("Quantity"),
 		_("Delivered"),
 		_("Unit"), $order->tax_included ? _("Price after Tax") : _("Price before Tax"), _("Discount %"), _("Total"), "");
@@ -245,12 +250,13 @@ function display_order_header(&$order, $editable, $date_text)
 {
 	global $Ajax, $SysPrefs;
 
-	start_outer_table(TABLESTYLE2, "width='80%'");
+	start_outer_table(TABLESTYLE2, "width=80%");
 
 	table_section(1);
 	
 	$customer_error = "";
 	$change_prices = 0;
+
 
 	if (isset($order) && !$editable)
 	{
@@ -299,6 +305,7 @@ function display_order_header(&$order, $editable, $date_text)
 
 				$customer_error = get_customer_details_to_order($order, $_POST['customer_id'], $_POST['branch_id']);
 				$_POST['Location'] = $order->Location;
+				$_POST['salesman'] = $order->salesman;
 				$_POST['deliver_to'] = $order->deliver_to;
 				$_POST['delivery_address'] = $order->delivery_address;
 				$_POST['phone'] = $order->phone;
@@ -361,6 +368,8 @@ function display_order_header(&$order, $editable, $date_text)
 		}
 	}
 
+	
+		
 	ref_row(_("Reference").':', 'ref', _('Reference number unique for this document type'), null, '');
 
 	table_section(2);
@@ -377,7 +386,6 @@ function display_order_header(&$order, $editable, $date_text)
 	label_row(_("Customer Discount:"), ($order->default_discount * 100) . "%");
 
 	table_section(3);
-	start_row();
 	if ($order->pos['cash_sale'] || $order->pos['credit_sale']) {
 		 // editable payment type 
 		if (get_post('payment') !== $order->payment) {
@@ -400,7 +408,6 @@ function display_order_header(&$order, $editable, $date_text)
 	} else {
 		label_cells(_('Payment:'), $order->payment_terms['terms']);
 	}
-	end_row();
 
 	if($editable) {
 		$str = sales_types_list_row(_("Price List:"), 'sales_type', null, true);
@@ -568,14 +575,24 @@ function display_delivery_details(&$order)
 	global $Ajax;
 
 	div_start('delivery');	
-
+	
 
 	if ($order->payment_terms['cash_sale']) {	// Direct payment sale
 		$Ajax->activate('items_table');
 		display_heading(_('Cash payment'));
-		start_table(TABLESTYLE2, "width='60%'");
+		start_table(TABLESTYLE2, "width=60%");
+		
+		//-----------------------------------------------------------------------------
+		//locations_list_row(_("Deliver from Location:"), 'Location', null, false, true);
+		locations_list_row(_("From Location:"), 'Location', null,false,true);
+		
+		
+		$Ajax->activate('salesman');
+		
 
-		locations_list_row(_("Deliver from Location:"), 'Location', null, false, true);
+		warehouse_salesman_list_row(_("Sales Person:"), $_POST['Location'], 'salesman', null, false, true);
+		//------------------------------------------------------------------------------
+
  		if (list_updated('Location'))
  			$Ajax->activate('items_table');
 		label_row(_("Cash account:"), $order->pos['bank_account_name']);
@@ -604,10 +621,21 @@ function display_delivery_details(&$order)
 			$delname = _("Required Delivery Date").':';
 		}
 		display_heading($title);
-		start_outer_table(TABLESTYLE2, "width='90%'");
+		start_outer_table(TABLESTYLE2, "width=90%");
 		table_section(1);
 
-		locations_list_row(_("Deliver from Location:"), 'Location', null, false, true);
+
+		//-------------------------------------------------------------------------------
+		//locations_list_row(_("Deliver from Location:"), 'Location', null, false, true);
+
+		
+		locations_list_row(_("From Location:"), 'Location', null,false,true);
+		$Ajax->activate('salesman');
+		
+		warehouse_salesman_list_row(_("Sales Person:"), $_POST['Location'], 'salesman', null, false, true);
+		
+		//-------------------------------------------------------------------------------
+
 		if (list_updated('Location'))
 			$Ajax->activate('items_table');
 

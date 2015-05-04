@@ -21,9 +21,9 @@
 	$charge - in bank currency
 */
 function write_customer_payment($trans_no, $customer_id, $branch_id, $bank_account,
-	$date_, $ref, $amount, $discount, $memo_, $rate=0, $charge=0, $bank_amount=0)
+	$date_, $ref, $amount, $discount, $memo_, $rate=0, $charge=0, $bank_amount=0,$loc_code)
 {
-	global $Refs;
+	global $Refs,$LocRefs;
 
 	begin_transaction();
 	$args = func_get_args(); while (count($args) < 12) $args[] = 0;
@@ -110,7 +110,8 @@ function write_customer_payment($trans_no, $customer_id, $branch_id, $bank_accou
 
 	add_comments(ST_CUSTPAYMENT, $payment_no, $date_, $memo_);
 
-	$Refs->save(ST_CUSTPAYMENT, $payment_no, $ref);
+	//$Refs->save(ST_CUSTPAYMENT, $payment_no, $ref);
+	$LocRefs->save(ST_CUSTPAYMENT, $payment_no, $ref,$loc_code);
 
 	$args->trans_no = $payment_no;
 	hook_db_postwrite($args, ST_CUSTPAYMENT);

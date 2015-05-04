@@ -142,6 +142,7 @@ function print_customer_balances()
 		$sql .= "WHERE debtor_no=".db_escape($fromcust);
 	$sql .= " ORDER BY name";
 	$result = db_query($sql, "The customers could not be retrieved");
+	$num_lines = 0;
 
 	while ($myrow = db_fetch($result))
 	{
@@ -165,6 +166,7 @@ function print_customer_balances()
 		$res = get_transactions($myrow['debtor_no'], $from, $to);
 		if ($no_zeros && db_num_rows($res) == 0) continue;
 
+ 		$num_lines++;
 		$rep->fontSize += 2;
 		$rep->TextCol(0, 2, $myrow['name']);
 		if ($convert)
@@ -182,11 +184,9 @@ function print_customer_balances()
 			$grandtotal[$i] += $init[$i];
 		}
 		$rep->NewLine(1, 2);
-		$rep->Line($rep->row + 4);
-		if (db_num_rows($res)==0) {
-			$rep->NewLine(1, 2);
+		if (db_num_rows($res)==0)
 			continue;
-		}
+		$rep->Line($rep->row + 4);
 		while ($trans = db_fetch($res))
 		{
 			if ($no_zeros && floatcmp($trans['TotalAmount'], $trans['Allocated']) == 0) continue;

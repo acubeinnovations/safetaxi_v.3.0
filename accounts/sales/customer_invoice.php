@@ -254,17 +254,22 @@ function copy_from_cart()
 	$_POST['due_date'] = $cart->due_date;
 	$_POST['Comments']= $cart->Comments;
 	$_POST['cart_id'] = $cart->cart_id;
-	$_POST['ref'] = $cart->reference;
+	if($cart->trans_no == 0)
+		$_POST['ref'] = $cart->get_loc_ref($cart->Location);
+	else
+		$_POST['ref'] = $cart->reference;
 	$_POST['payment'] = $cart->payment;
 	$_POST['dimension_id'] = $cart->dimension_id;
 	$_POST['dimension2_id'] = $cart->dimension2_id;
+
+
 }
 
 //-----------------------------------------------------------------------------
 
 function check_data()
 {
-	global $Refs;
+	global $Refs,$LocRefs;
 
 	if (!isset($_POST['InvoiceDate']) || !is_date($_POST['InvoiceDate'])) {
 		display_error(_("The entered invoice date is invalid."));
@@ -379,7 +384,7 @@ $is_edition = $_SESSION['Items']->trans_type == ST_SALESINVOICE && $_SESSION['It
 start_form();
 hidden('cart_id');
 
-start_table(TABLESTYLE2, "width='80%'", 5);
+start_table(TABLESTYLE2, "width=80%", 5);
 
 start_row();
 $colspan = 1;
@@ -474,7 +479,7 @@ if ($row['dissallow_invoices'] == 1)
 display_heading(_("Invoice Items"));
 
 div_start('Items');
-start_table(TABLESTYLE, "width='80%'");
+start_table(TABLESTYLE, "width=80%");
 $th = array(_("Item Code"), _("Item Description"), _("Delivered"), _("Units"), _("Invoiced"),
 	_("This Invoice"), _("Price"), _("Tax Type"), _("Discount"), _("Total"));
 
@@ -528,9 +533,9 @@ foreach ($_SESSION['Items']->line_items as $line=>$ln_itm) {
 		if ($dn_line_cnt == 0) {
 			$dn_line_cnt = $dspans[0];
 			$dspans = array_slice($dspans, 1);
-			label_cell($ln_itm->src_no, "rowspan=$dn_line_cnt class='oddrow'");
+			label_cell($ln_itm->src_no, "rowspan=$dn_line_cnt class=oddrow");
 			label_cell("<a href='" . $_SERVER['PHP_SELF'] . "?RemoveDN=".
-				$ln_itm->src_no."'>" . _("Remove") . "</a>", "rowspan=$dn_line_cnt class='oddrow'");
+				$ln_itm->src_no."'>" . _("Remove") . "</a>", "rowspan=$dn_line_cnt class=oddrow");
 		}
 		$dn_line_cnt--;
 	}

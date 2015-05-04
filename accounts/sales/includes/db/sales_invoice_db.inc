@@ -14,7 +14,9 @@
 //
 function write_sales_invoice(&$invoice)
 {
-	global $Refs;
+	global $Refs,$LocRefs;
+
+	
 
 	$trans_no = $invoice->trans_no;
 	if (is_array($trans_no))
@@ -72,7 +74,7 @@ function write_sales_invoice(&$invoice)
 	$items_added_tax, $invoice->freight_cost, $freight_added_tax,
 	$invoice->sales_type, $sales_order, $invoice->ship_via, 
 	$invoice->due_date, 0, 0, $invoice->dimension_id, 
-	$invoice->dimension2_id, $invoice->payment); 
+	$invoice->dimension2_id, $invoice->payment,$invoice->Location); 
 	// 2008-06-14 extra $alloc, 2008-11-12 added dimension_id Joe Hunt
 
 	if ($trans_no == 0) {
@@ -161,7 +163,8 @@ function write_sales_invoice(&$invoice)
 	add_comments(10, $invoice_no, $date_, $invoice->Comments);
 
 	if ($trans_no == 0) {
-		$Refs->save(ST_SALESINVOICE, $invoice_no, $invoice->reference);
+		//$Refs->save(ST_SALESINVOICE, $invoice_no, $invoice->reference);
+		$LocRefs->save(ST_SALESINVOICE, $invoice_no, $invoice->reference,$invoice->Location);
 		if ($invoice->payment_terms['cash_sale'] && $invoice->pos['pos_account']) {
 			$amount = $items_total + $items_added_tax + $invoice->freight_cost 
 				+ $freight_added_tax;
@@ -170,10 +173,17 @@ function write_sales_invoice(&$invoice)
 			// extend invoice entry page with final amount after discount 
 			// and change line below.
 			$discount = 0; // $invoice->cash_discount*$amount;
-			$pmtno = write_customer_payment(0, $invoice->customer_id, 
+
+			//loc refs
+			/*$pmtno = write_customer_payment(0, $invoice->customer_id, 
 				$invoice->Branch, $invoice->pos['pos_account'], $date_,
 				$Refs->get_next(ST_CUSTPAYMENT), $amount-$discount, $discount,
-				_('Cash invoice').' '.$invoice_no);
+				_('Cash invoice').' '.$invoice_no);*/
+			$pmtno = write_customer_payment(0, $invoice->customer_id, 
+				$invoice->Branch, $invoice->pos['pos_account'], $date_,
+				$LocRefs->get_next(ST_CUSTPAYMENT,$invoice->Location), $amount-$discount, $discount,
+				_('Cash invoice').' '.$invoice_no, 0, 0, 0, $invoice->Location);
+
 			add_cust_allocation($amount, ST_CUSTPAYMENT, $pmtno, ST_SALESINVOICE, $invoice_no);
 
 			update_debtor_trans_allocation(ST_SALESINVOICE, $invoice_no, $amount);

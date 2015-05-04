@@ -43,7 +43,7 @@ input, select {
 }
 
 select {
-    max-width: 230px;
+    max-width: 200px;
 }
 
 option.inactive {

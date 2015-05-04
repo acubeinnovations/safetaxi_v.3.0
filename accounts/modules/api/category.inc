@@ -10,7 +10,7 @@ $path_to_root = "../..";
 include_once($path_to_root . "/inventory/includes/db/items_category_db.inc");
 
 function category_all($from = null) {
-	$sql = "SELECT c.*, t.name as tax_name FROM ".TB_PREF."stock_category c, ".TB_PREF."item_tax_types t WHERE c.dflt_tax_type=t.id";
+	$sql = "SELECT c.*, t.name as tax_name FROM ".TB_PREF."stock_category c, ".TB_PREF."item_tax_types t WHERE c.dflt_tax_type=t.id AND dflt_no_sale=0";
 	if ($from !== null) {
 		$sql .= "LIMIT " . $from . ", " . RESULTS_PER_PAGE;
 	}
@@ -24,6 +24,15 @@ function category_all($from = null) {
 	}
 
 	api_success_response(json_encode($info));
+}
+
+function category_count()
+{
+	$sql = "SELECT COUNT(*) FROM ".TB_PREF."stock_category";
+	$query = db_query($sql, "error");
+	$data = db_fetch_row($query, "error");
+	
+	api_success_response(json_encode($data));
 }
 
 function category_get($id)

@@ -49,21 +49,11 @@ function start_form($multi=false, $dummy=false, $action="", $name="")
 
 }
 
-/*
-	Flush hidden fields buffer.
-*/
-function output_hidden()
-{
-	global $hidden_fields;
-
-	echo implode('', $hidden_fields);
-	$hidden_fields = array();
-}
 //---------------------------------------------------------------------------------
 
 function end_form($breaks=0)
 {
-	global $Ajax, $hidden_fields;
+	global $Ajax;
 
 	$_SESSION['csrf_token'] = hash('sha256', uniqid(mt_rand(), true));
 	if ($breaks)
@@ -71,8 +61,6 @@ function end_form($breaks=0)
 	hidden('_focus');
 	hidden('_modified', get_post('_modified', 0));
 	hidden('_token', $_SESSION['csrf_token']);
-	
-	output_hidden();
 	echo "</form>\n";
 	$Ajax->activate('_token');
 }
@@ -99,13 +87,12 @@ function start_table($class=false, $extra="", $padding='2', $spacing='0')
 		echo " class='tablestyle'";
 	if ($extra != "")
 		echo " $extra";
-	echo " cellpadding='$padding' cellspacing='$spacing'>\n";
+	echo " cellpadding=$padding cellspacing=$spacing>\n";
 }
 
 function end_table($breaks=0)
 {
 	echo "</table></center>\n";
-	output_hidden();
 	if ($breaks)
 		br($breaks);
 }
@@ -123,7 +110,7 @@ function table_section($number=1, $width=false)
 	if ($number > 1)
 	{
 		echo "</table>\n";
-		$width = ($width ? "width='$width'" : "");
+		$width = ($width ? "width=$width" : "");
 		//echo "</td><td class='tableseparator' $width>\n"; // outer table
 		echo "</td><td style='border-left:1px solid #cccccc;' $width>\n"; // outer table
 	}
@@ -194,7 +181,7 @@ function hyperlink_back($center=true, $no_menu=true, $type_no=0, $trans_no=0, $f
     	echo $attach;	
     }
 	$width = ($id != 0 ? "30%" : "20%");	
-	start_table(false, "width='$width'");
+	start_table(false, "width=$width");
 	start_row();
 	if ($no_menu)
 	{

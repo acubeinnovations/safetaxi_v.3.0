@@ -79,63 +79,65 @@ class Customers extends CI_Controller {
 }
 
 		public function addCustomer(){
-		if(isset($_REQUEST['mobile']) || $_REQUEST['mobile']!=''  && isset($_REQUEST['name']) && $_REQUEST['name']!=''){
-			$data['mobile']=$_REQUEST['mobile'];
-			$data['name']=$_REQUEST['name'];
-			$data['user_id']=$this->session->userdata('id');
-			if(isset($_REQUEST['customer_status_id'])){
-			$data['customer_status_id']=$_REQUEST['customer_status_id'];
-			}else{
-			$data['customer_status_id']=CUSTOMER_ACTIVE;
+			if(isset($_REQUEST['mobile']) || $_REQUEST['mobile']!=''  && isset($_REQUEST['name']) && $_REQUEST['name']!=''){
+				$data['mobile']=$_REQUEST['mobile'];
+				$data['name']=$_REQUEST['name'];
+				$data['user_id']=$this->session->userdata('id');
+				if(isset($_REQUEST['customer_status_id'])){
+					$data['customer_status_id']=$_REQUEST['customer_status_id'];
+				}else{
+					$data['customer_status_id']=CUSTOMER_ACTIVE;
+				}
+
+				
+				/*$res=$this->customers_model->addCustomer($data);
+				if(isset($res) && $res!=false){
+
+					//save customer in fa table
+					//==========================add customer==============
+					$debtor = array('custname' =>$data['name'],//customer full name
+							'cust_ref' =>$data['name'],//customer short name)
+							'address' =>'',// customer address
+							'phone' => $data['mobile'],//customer phone
+							'phone2' => $data['mobile'],//customer phone2
+							'email' => ''
+							);
+
+					$method = isset($_GET['m']) ? $_GET['m'] : 'p';
+					$action = isset($_GET['a']) ? $_GET['a'] : 'customers';
+					$record = isset($_GET['r']) ? $_GET['r'] : '';
+					$filter = isset($_GET['f']) ? $_GET['f'] : false;
+					$fa_customer = $this->fabridge->open($method, $action, $record, $filter,$debtor);
+					if($fa_customer){
+						$updtdata['fa_customer_id']== $fa_customer['debtor_no'];
+						$this->customers_model->updateCustomers($updtdata,$res);
+						//save this id in customers table- fa_customer_id
+					}
+
+					//======================================================
+					echo true;
+				}else{
+					echo false;
+				}*/
 			}
-			
-		$res=$this->customers_model->addCustomer($data);
-		if(isset($res) && $res!=false){
-
-			/*//save customer in fa table
-			//==========================add customer==============
-			$debtor = array('custname' =>$data['name'],//customer full name
-					'cust_ref' =>$data['name'],//customer short name)
-					'address' =>'',// customer address
-					'phone' => $data['mobile'],//customer phone
-					'phone2' => $data['mobile'],//customer phone2
-					'email' => ''
-					);
-
-			$method = isset($_GET['m']) ? $_GET['m'] : 'p';
-			$action = isset($_GET['a']) ? $_GET['a'] : 'customers';
-			$record = isset($_GET['r']) ? $_GET['r'] : '';
-			$filter = isset($_GET['f']) ? $_GET['f'] : false;
-			$fa_customer = $this->fabridge->open($method, $action, $record, $filter,$debtor);
-			if($fa_customer){
-				$updtdata['fa_customer_id']== $fa_customer['debtor_no'];
-				$this->customers_model->updateCustomers($updtdata,$res);
-				//save this id in customers table- fa_customer_id
-			}
-
-			//======================================================*/
-			echo true;
-		}else{
-			echo false;
-		}
-		}
 		}
 
-	   
+		   
 
-		public function Customer(){
+	public function Customer(){
 		if(isset($_REQUEST['customer-add-update'])){
+			
 			$customer_id=$this->input->post('customer_id');
 			$data['name']=$this->input->post('name');
 			$data['customer_status_id']=$this->input->post('customer_status_id');
 			$data['mobile']=$this->input->post('mobile');
 			$data['address']=$this->input->post('address');
 			if($customer_id!=gINVALID){ 
-			$hmail=$this->input->post('h_email');
-			$hphone=$this->input->post('h_phone');
+				$hmail=$this->input->post('h_email');
+				$hphone=$this->input->post('h_phone');
 			}else{
-			$hmail='';
-			$hphone='';
+				$hmail='';
+				$hphone='';
 			}
 			$this->form_validation->set_rules('name','Name','trim|required|min_length[2]|xss_clean');
 			
@@ -146,83 +148,51 @@ class Customers extends CI_Controller {
 				$this->form_validation->set_rules('email','Mail','trim|valid_email|is_unique[customers.email]');
 			}*/	
 			if($customer_id!=gINVALID && $data['mobile'] == $hphone){
-			$this->form_validation->set_rules('mobile','Mobile','trim|required|regex_match[/^[0-9]{10}$/]|numeric|xss_clean');
+				$this->form_validation->set_rules('mobile','Mobile','trim|required|regex_match[/^[0-9]{10}$/]|numeric|xss_clean');
 			}else{
-			$this->form_validation->set_rules('mobile','Mobile','trim|required|regex_match[/^[0-9]{10}$/]|numeric|xss_clean||is_unique[customers.mobile]');
+				$this->form_validation->set_rules('mobile','Mobile','trim|required|regex_match[/^[0-9]{10}$/]|numeric|xss_clean||is_unique[customers.mobile]');
 			}
 			
 			$data['user_id']=$this->session->userdata('id');
 			if($this->form_validation->run() != False) {
+
 				if($customer_id>gINVALID) {
-				$res=$this->customers_model->updateCustomers($data,$customer_id);
-					if(isset($res) && $res!=false){
-						/*//==========================edit customer==============
-						$debtor = array('custname' =>$data['name'],//customer full name
-								'cust_ref' =>$data['name'],//customer short name)
-								'address' =>$data['address']// customer address
-								);
 
-						$method = isset($_GET['m']) ? $_GET['m'] : 't';
-						$action = isset($_GET['a']) ? $_GET['a'] : 'customers';
-						$record = isset($_GET['r']) ? $_GET['r'] : '';
-						$filter = isset($_GET['f']) ? $_GET['f'] : false;
-						$update = $this->fabridge->open($method, $action, $record, $filter,$debtor);
-
-						//======================================================*/
+					$res=$this->customers_model->updateCustomers($data,$customer_id);
+					if(isset($res) && $res!=false){ 
+						
 						$this->session->set_userdata(array('dbSuccess'=>'Customer details Updated Successfully'));
 						redirect(base_url().'front-desk/customers');	
 					}
 				}else if($customer_id==gINVALID){ 
-				$res=$this->customers_model->addCustomer($data);
-					if(isset($res) && $res!=false  && $res>0){
-						
-					/*	//save customer in fa table
-						//==========================add customer==============
-						$debtor = array('custname' =>$data['name'],//customer full name
-								'cust_ref' =>$data['name'],//customer short name)
-								'address' =>'',// customer address
-								'phone' => $data['mobile'],//customer phone
-								'phone2' => $data['mobile'],//customer phone2
-								'email' => ''
-								);
 
-						$method = isset($_GET['m']) ? $_GET['m'] : 'p';
-						$action = isset($_GET['a']) ? $_GET['a'] : 'customers';
-						$record = isset($_GET['r']) ? $_GET['r'] : '';
-						$filter = isset($_GET['f']) ? $_GET['f'] : false;
-						$fa_customer = $this->fabridge->open($method, $action, $record, $filter,$debtor);
-//print_r($fa_customer);exit;
-						if($fa_customer){
-							$updtdata['fa_customer_id']== $fa_customer['debtor_no'];
-							$this->customers_model->updateCustomers($updtdata,$res);
-							//save this id in customers table- fa_customer_id
-						}
-
-						//======================================================*/
-
-					 	$this->session->set_userdata(array('dbSuccess'=>'Customer details Added Successfully'));
-						redirect(base_url().'front-desk/customers');	
-					}
+					$res=$this->customers_model->addCustomer($data);
+					$this->session->set_userdata(array('dbSuccess'=>'Customer details Added Successfully'));
+					redirect(base_url().'front-desk/customers');
+					
+					
+					
 				}
-				}else{
+			}else{
 				$data['customer_id']=$customer_id;
 				$this->mysession->set('post',$data);
 				if($customer_id==gINVALID){
-				$customer_id='';
+					$customer_id='';
 				}
 				redirect(base_url().'front-desk/customer/'.$customer_id);
 
-				}
+			}
 		}
-		}
+	}
+
 		
 	public function notAuthorized(){
-	$data['title']='Not Authorized | '.PRODUCT_NAME;
-	$page='not_authorized';
-	$this->load->view('admin-templates/header',$data);
-	$this->load->view('admin-templates/nav');
-	$this->load->view($page,$data);
-	$this->load->view('admin-templates/footer');
+		$data['title']='Not Authorized | '.PRODUCT_NAME;
+		$page='not_authorized';
+		$this->load->view('admin-templates/header',$data);
+		$this->load->view('admin-templates/nav');
+		$this->load->view($page,$data);
+		$this->load->view('admin-templates/footer');
 	
 	}
 	public function session_check() {
