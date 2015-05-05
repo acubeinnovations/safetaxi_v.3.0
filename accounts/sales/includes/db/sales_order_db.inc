@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------------------
 function add_sales_order(&$order)
 {
-	global $loc_notification, $path_to_root, $Refs,$LocRefs;
+	global $loc_notification, $path_to_root, $Refs;
 
 	begin_transaction();
 	hook_db_prewrite($order, $order->trans_type);
@@ -22,7 +22,7 @@ function add_sales_order(&$order)
 	$total = $order->get_trans_total();
 	$sql = "INSERT INTO ".TB_PREF."sales_orders (order_no, type, debtor_no, trans_type, branch_code, customer_ref, reference, comments, ord_date,
 		order_type, ship_via, deliver_to, delivery_address, contact_phone,
-		freight_cost, from_stk_loc, salesman_code, delivery_date, payment_terms, total)
+		freight_cost, from_stk_loc, delivery_date, payment_terms, total)
 		VALUES (" .db_escape($order_no) . "," .db_escape($order_type) . "," . db_escape($order->customer_id) .
 		 ", " .db_escape($order->trans_type) . "," .db_escape($order->Branch) . ", ".
 			db_escape($order->cust_ref) .",". 
@@ -36,7 +36,6 @@ function add_sales_order(&$order)
 			db_escape($order->phone) . ", " . 
 			db_escape($order->freight_cost) .", " . 
 			db_escape($order->Location) .", " .
-			db_escape($order->salesman) .", " .
 			db_escape($del_date) . "," .
 			db_escape($order->payment) . "," .
 			db_escape($total). ")";
@@ -71,8 +70,7 @@ function add_sales_order(&$order)
 			update_parent_line(ST_SALESORDER, $line->src_id, $line->qty_dispatched); // clear all the quote despite all or the part was ordered
 	} /* inserted line items into sales order details */
 	add_audit_trail($order->trans_type, $order_no, $order->document_date);
-	//$Refs->save($order->trans_type, $order_no, $order->reference);
-	$LocRefs->save($order->trans_type, $order_no, $order->reference,$order->Location);
+	$Refs->save($order->trans_type, $order_no, $order->reference);
 
 	hook_db_postwrite($order, $order->trans_type);
 	commit_transaction();
@@ -120,7 +118,6 @@ function update_sales_order_version($order)
 
 function update_sales_order($order)
 {
-	//echo "<pre>";print_r($order);echo "</pre>";exit;
 	global $loc_notification, $path_to_root, $Refs;
 
 	$del_date = date2sql($order->due_date);
@@ -146,7 +143,6 @@ function update_sales_order($order)
 		contact_phone = " .db_escape($order->phone) . ",
 		freight_cost = " .db_escape($order->freight_cost) .",
 		from_stk_loc = " .db_escape($order->Location) .",
-		salesman_code = " .db_escape($order->salesman) .",
 		delivery_date = " .db_escape($del_date). ",
 		version = ".($version+1).",
 		payment_terms = " .db_escape($order->payment). ",
@@ -223,8 +219,6 @@ function get_sales_order_header($order_no, $trans_type)
 	  ."cust.curr_code, "
 	  ."cust.address, "
 	  ."loc.location_name, "
-	  ."sman.salesman_name, "
-	  ."sman.salesman_phone, "
 	  ."cust.discount, "
 	  ."stype.sales_type, "
 	  ."stype.id AS sales_type_id, "
@@ -239,14 +233,12 @@ function get_sales_order_header($order_no, $trans_type)
 	  .TB_PREF."sales_types stype, "
 	  .TB_PREF."tax_groups tax_group, "
 	  .TB_PREF."cust_branch branch,"
-	  .TB_PREF."locations loc,"
-	  .TB_PREF."salesman sman
+	  .TB_PREF."locations loc
 	WHERE sorder.order_type=stype.id
 		AND branch.branch_code = sorder.branch_code
 		AND branch.tax_group_id = tax_group.id
 		AND sorder.debtor_no = cust.debtor_no
 		AND loc.loc_code = sorder.from_stk_loc
-		AND sman.salesman_code = sorder.salesman_code
 		AND sorder.trans_type = " . db_escape($trans_type) ."
 		AND sorder.order_no = " . db_escape($order_no );
 
@@ -296,7 +288,6 @@ function read_sales_order($order_no, &$order, $trans_type)
 	$order->trans_type = $myrow['trans_type'];
 	$order->so_type =  $myrow["type"];
 	$order->trans_no = array($order_no=> $myrow["version"]);
-	
 
 	$order->set_customer($myrow["debtor_no"], $myrow["name"],
 	  $myrow["curr_code"], $myrow["discount"], $myrow["payment_terms"]);
@@ -308,7 +299,6 @@ function read_sales_order($order_no, &$order, $trans_type)
 	    $myrow["tax_included"], $myrow["factor"]); // no default price calculations on edit
 
 	$order->set_location($myrow["from_stk_loc"], $myrow["location_name"]);
-	$order->set_salesman($myrow["salesman_code"], $myrow["salesman_name"]);
 
 	$order->set_delivery($myrow["ship_via"], $myrow["deliver_to"],
 	  $myrow["delivery_address"], $myrow["freight_cost"]);

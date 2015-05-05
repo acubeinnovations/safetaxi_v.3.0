@@ -378,6 +378,70 @@ function customer_branches_get($id){
 
 }
 
+function customer_n_branch_get($id){
+
+	/*$sql = "SELECT debtor.*," 
+		."b.branch_code, "
+		."b.default_ship_via, "
+		."b.branch_ref, "
+		."b.br_name, "
+		."p.name as contact_name, "
+		."a.description, "
+		."p.phone, "
+		."p.fax, "
+		."p.email, "
+		."t.name AS tax_group_name, "
+		."b.inactive
+		FROM ".TB_PREF."debtors_master debtor, ".TB_PREF."cust_branch b "
+		. "LEFT JOIN ".TB_PREF."crm_contacts c
+			ON c.entity_id=b.branch_code AND c.type='cust_branch' AND c.action='general'
+			LEFT JOIN ".TB_PREF."crm_persons p on c.person_id=p.id,"
+			.TB_PREF."areas a, "
+			.TB_PREF."tax_groups t
+		WHERE b.tax_group_id=t.id
+		AND b.area=a.area_code
+		AND b.debtor_no = debtor.debtor_no
+		AND debtor.debtor_no=".db_escape($id);*/
+$sql = "SELECT debtor.* FROM ".TB_PREF."debtors_master debtor WHERE debtor.debtor_no=".db_escape($id);
+		
+		
+
+	$result = db_query($sql,"Cannot Get Customer");
+
+	$ret = db_fetch($result);
+
+	/*$ref = get_loc_next_reference($loc_code,$trans_type);
+
+	if(!$ret){
+		$ret = array();
+	} else{
+		$ret['next_ref'] = $ref;
+	}*/
+
+	api_success_response(json_encode($ret));
+
+}
+
+/* get Customer By name*/
+function customer_by_name($name) //sales/includes/db/customers_db.inc
+{
+
+	$cust = get_customer_by_name($name);
+	$info = array();
+
+	while($data = db_fetch($cust)) {
+		array_push($info, $data['name']." (ID:".$data['debtor_no'].")");
+	}
+
+
+
+	 
+	api_success_response(json_encode($info));
+
+}
+/* get Customer By name*/
+
+
 function customer_n_branch_get($id,$trans_type){
 
 	$sql = "SELECT debtor.*," 
@@ -419,25 +483,5 @@ function customer_n_branch_get($id,$trans_type){
 	api_success_response(json_encode($ret));
 
 }
-
-/* get Customer By name*/
-function customer_by_name($name) //sales/includes/db/customers_db.inc
-{
-
-	$cust = get_customer_by_name($name);
-	$info = array();
-
-	while($data = db_fetch($cust)) {
-		array_push($info, $data['name']." (ID:".$data['debtor_no'].")");
-	}
-
-
-
-	 
-	api_success_response(json_encode($info));
-
-}
-/* get Customer By name*/
-
 
 ?>

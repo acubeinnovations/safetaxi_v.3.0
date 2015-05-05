@@ -883,6 +883,7 @@ function tripinvoice_add() {
 	$app	= \Slim\Slim::getInstance('SASYS');
 	$req	= $app->request();
 	$info	= $req->post();
+	$info['trans_type'] = ST_SALESINVOICE;
 
 	//api_success_response(json_encode($info));
 	//get customer FOR SALES INVOICE
@@ -890,12 +891,18 @@ function tripinvoice_add() {
 	$customer = get_customer($info['fa_customer_id']);
 	$branch = get_customer_branch($info['fa_customer_id']);
 	$ret = array('customer'=>$customer,'branch'=>$branch);
+
+	$info['deliver_to'] = $customer['name'];
+	$info['delivery_address'] = $customer['address'];
+	$info['delivery_date'] = sql2date($info['delivery_date']);
+	$info['order_date'] = sql2date($info['order_date']);
 	
+
 	
-	$cart				= null;
-	$cart				= new Cart(ST_SALESINVOICE);
-	api_success_response(json_encode($ret));
-	/*$cart->reference		= get_next_reference($cart->trans_type);
+	$cart		= null;
+	$cart		= new Cart($info['trans_type'], 0);
+	
+	$cart->reference		= $info['ref'] = get_next_reference($cart->trans_type);
 	$cart->Comments			= $info['comments'];
 	$cart->document_date		= $info['order_date'];
 
@@ -907,6 +914,7 @@ function tripinvoice_add() {
 		$newpayment		= true;
 	}
 
+
 	if ($cart->payment_terms['cash_sale']) {
 		if ($newpayment) {
 			$cart->due_date		= $cart->document_date;
@@ -917,14 +925,14 @@ function tripinvoice_add() {
 	} else {
 		$cart->due_date			= $info['delivery_date'];
 		$cart->cust_ref			= $customer['debtor_ref'];
-		$cart->deliver_to		= $customer['name']
+		$cart->deliver_to		= $customer['name'];
 		$cart->delivery_address		= $customer['address'];
 		$cart->phone			= $customer['phone'];
 		$cart->ship_via			= $branch['default_ship_via'];
 	}
 
 	$cart->Location		= $branch['default_location'];
-	$cart->freight_cost	= input_num('freight_cost');
+	$cart->freight_cost	= '';
 
 	if (isset($customer['email'])) {
 		$cart->email = $customer['email'];
@@ -938,22 +946,28 @@ function tripinvoice_add() {
 	$cart->dimension_id	= $customer['dimension_id'];
 	$cart->dimension2_id	= $customer['dimension2_id'];
 
+	$customer_error = get_customer_details_to_order($cart, $customer['debtor_no'], $branch['branch_code']);
+
 	$stock = get_item(get_company_pref('default_item'));//default item
 	$quantity = 1;//default
+
 	foreach($info['items'] as $item) {
 		add_to_order($cart, $stock['stock_id'], $quantity, $item['price'], $item['discount'], $stock['description']);
 	}
 
 	$can_process = can_process_trip_invoice($info, $cart);
+	
 	if ($can_process['passed'] == false) {
 		trigger_error(var_export($can_process, true));
 		api_error(412, $can_process['message']);
 		return;
 	}
-
+	$cart->trip_id = $info['trip_id'];
 	$result = $cart->writeTx(1);
+	$ret = array($result);
+	api_success_response(json_encode(key($cart->trans_no)));
 
-	if ($result == -1) {
+	/*if ($result == -1) {
 		api_error(500, 'Could Not Save to Database');
 	}else {	
 		api_success_response(json_encode(key($cart->trans_no)));
@@ -967,9 +981,13 @@ function can_process_trip_invoice($info, $cart) {
 		return array("passed" => false, "message" => _("There is no customer selected."));
 	}
 
+	if (!$info['trip_id'] || !is_numeric($info['trip_id'])) {
+		return array("passed" => false, "message" => _("Invalid Trip."));
+	}
+
 
 	if (!is_date($info['order_date'])) {
-		return array("passed" => false, "message" => _("The entered date is invalid."));
+		return array("passed" => false, "message" => _("The entered order_date is invalid."));
 	}
 
 	if ($cart->trans_type != ST_SALESORDER && $cart->trans_type != ST_SALESQUOTE && !is_date_in_fiscalyear($info['order_date'])) {
@@ -1019,9 +1037,9 @@ function can_process_trip_invoice($info, $cart) {
 		return array("passed" => false, "message" => _("You must enter a reference."));
 	}
 
-	if (!db_has_currency_rates($cart->customer_currency, $info['order_date'])){
-		return false;
-	}
+	//if (!db_has_currency_rates($cart->customer_currency, $info['order_date'])){
+		//return array("passed" => false, "message" => _("Currency rate."));
+	//}
 
 	if ($cart->get_items_total() < 0) {
 		return array("passed" => false, "message" => _("Invoice total amount cannot be less than zero."));

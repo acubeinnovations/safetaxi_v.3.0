@@ -10,13 +10,17 @@
     See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
 ***********************************************************************/
 //-----------------------------------------------------------------------------
+
+function update_trip($trip_id,$invoice_no){
+	$sql = "UPDATE trips SET invoice_no = ".db_escape($invoice_no)." WHERE id = ".db_escape($trip_id);
+	$res = db_query($sql, 'Trip not invoiced');
+}
+
 //	Add or update Sales Invoice
 //
 function write_sales_invoice(&$invoice)
 {
-	global $Refs,$LocRefs;
-
-	
+	global $Refs;
 
 	$trans_no = $invoice->trans_no;
 	if (is_array($trans_no))
@@ -74,7 +78,10 @@ function write_sales_invoice(&$invoice)
 	$items_added_tax, $invoice->freight_cost, $freight_added_tax,
 	$invoice->sales_type, $sales_order, $invoice->ship_via, 
 	$invoice->due_date, 0, 0, $invoice->dimension_id, 
-	$invoice->dimension2_id, $invoice->payment,$invoice->Location); 
+	$invoice->dimension2_id, $invoice->payment); 
+
+	update_trip($invoice->trip_id,$invoice_no);
+
 	// 2008-06-14 extra $alloc, 2008-11-12 added dimension_id Joe Hunt
 
 	if ($trans_no == 0) {
@@ -163,8 +170,7 @@ function write_sales_invoice(&$invoice)
 	add_comments(10, $invoice_no, $date_, $invoice->Comments);
 
 	if ($trans_no == 0) {
-		//$Refs->save(ST_SALESINVOICE, $invoice_no, $invoice->reference);
-		$LocRefs->save(ST_SALESINVOICE, $invoice_no, $invoice->reference,$invoice->Location);
+		$Refs->save(ST_SALESINVOICE, $invoice_no, $invoice->reference);
 		if ($invoice->payment_terms['cash_sale'] && $invoice->pos['pos_account']) {
 			$amount = $items_total + $items_added_tax + $invoice->freight_cost 
 				+ $freight_added_tax;
@@ -173,17 +179,10 @@ function write_sales_invoice(&$invoice)
 			// extend invoice entry page with final amount after discount 
 			// and change line below.
 			$discount = 0; // $invoice->cash_discount*$amount;
-
-			//loc refs
-			/*$pmtno = write_customer_payment(0, $invoice->customer_id, 
-				$invoice->Branch, $invoice->pos['pos_account'], $date_,
-				$Refs->get_next(ST_CUSTPAYMENT), $amount-$discount, $discount,
-				_('Cash invoice').' '.$invoice_no);*/
 			$pmtno = write_customer_payment(0, $invoice->customer_id, 
 				$invoice->Branch, $invoice->pos['pos_account'], $date_,
-				$LocRefs->get_next(ST_CUSTPAYMENT,$invoice->Location), $amount-$discount, $discount,
-				_('Cash invoice').' '.$invoice_no, 0, 0, 0, $invoice->Location);
-
+				$Refs->get_next(ST_CUSTPAYMENT), $amount-$discount, $discount,
+				_('Cash invoice').' '.$invoice_no);
 			add_cust_allocation($amount, ST_CUSTPAYMENT, $pmtno, ST_SALESINVOICE, $invoice_no);
 
 			update_debtor_trans_allocation(ST_SALESINVOICE, $invoice_no, $amount);

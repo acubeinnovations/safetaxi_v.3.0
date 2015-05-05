@@ -1,4 +1,5 @@
 <?php
+
 /**********************************************
 Author: Andres Amaya
 Name: SASYS REST API
@@ -42,11 +43,26 @@ include_once(FA_ROOT . "/includes/data_checks.inc");
 // echo "cust delivery => ".ST_CUSTDELIVERY;
 // echo "cust credit => ".ST_CUSTCREDIT;
 
-$rest = new \Slim\Slim(array(
+/*$rest = new \Slim\Slim(array(
 	'log.enabled' => true,
 	'mode' => 'debug',
 	'debug' => true
+));*/
+
+$rest = new \Slim\Slim(array(
+	'mode' => 'development'
 ));
+
+// Only invoked if mode is "development"
+$rest->configureMode('development', function () use ($rest) {
+    $rest->config(array(
+        'log.enable' => false,
+        'debug' => true
+    ));
+});
+
+
+
 $rest->setName('SASYS');
 
 // API Login Hook
@@ -367,6 +383,14 @@ $rest->get('/taxgroups/', function() use ($rest){
 
 // ------------------------------- Customers -------------------------------
 // Customers
+
+
+// Get Customer and Branch General Info
+$rest->get('/customer_n_branch/:id', function($id) use ($rest){
+	include_once (API_ROOT . "/customers.inc");
+	customer_n_branch_get($id);
+
+});
 
 
 

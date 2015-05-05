@@ -201,52 +201,16 @@ function get_customer_by_name($name)
 }
 /* getCustomerByName Ends*/
 
-
-
-//get customer for trip invoice
-function get_customer_n_branch($debtor_no)
-{
-	$sql = "SELECT debtor.*," 
-		."b.branch_code, "
-		."b.default_ship_via, "
-		."b.default_location, "
-		."b.branch_ref, "
-		."b.br_name, "
-		."p.name as contact_name, "
-		."a.description, "
-		."p.phone, "
-		."p.fax, "
-		."p.email, "
-		."t.name AS tax_group_name, "
-		."b.inactive
-		FROM ".TB_PREF."debtors_master debtor, ".TB_PREF."cust_branch b "
-		. "LEFT JOIN ".TB_PREF."crm_contacts c
-			ON c.entity_id=b.branch_code AND c.type='cust_branch' AND c.action='general'
-			LEFT JOIN ".TB_PREF."crm_persons p on c.person_id=p.id,"
-			.TB_PREF."areas a, "
-			.TB_PREF."tax_groups t
-		WHERE b.tax_group_id=t.id
-		AND b.area=a.area_code
-		AND b.debtor_no = debtor.debtor_no
-		AND debtor.debtor_no=".db_escape($debtor_no);
-		
-
-	$result = db_query($sql,"Cannot Get Customer");
-
-	return db_fetch($result);
-	
-}
-
 function get_customer_branch($debtor_no)
 {
-	$sql = "SELECT * FROM ".TB_PREF."cust_branch
-		WHERE  debtor_no=".db_escape($debtor_no);
+	$sql = "SELECT *
+		FROM ".TB_PREF."cust_branch		
+		WHERE debtor_no=".db_escape($debtor_no);
 		
 
 	$result = db_query($sql,"Cannot Get Customer");
 
 	return db_fetch($result);
 }
-
 
 ?>

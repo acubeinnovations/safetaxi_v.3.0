@@ -53,7 +53,6 @@ class cart
 	var $reference;
 	var $Comments;
 	var $Location;
-	
 	var $location_name;
 	var $order_no; 		// the original order number
 
@@ -73,7 +72,8 @@ class cart
 	var $payment_terms; // cached payment terms
 	var $credit;
 	var $ex_rate;
-	var $DisplayTotal = 1;
+
+	var $trip_id;
 
 	//-------------------------------------------------------------------------
 	//
@@ -92,9 +92,6 @@ class cart
 		$this->dimension_id = 0;
 		$this->dimension2_id = 0;
 		$this->pos = get_sales_point(user_pos());
-		//set location
-		$this->Location = $_SESSION['wa_current_user']->loc_code;
-		
 		$this->read($type, $trans_no, $prep_child);
 		$this->cart_id = uniqid('');
 	}
@@ -125,13 +122,12 @@ class cart
 	//
 	function prepare_child()
 	{
-		global $Refs,$LocRefs;
+		global $Refs;
 
 		$type = get_child_type($this->trans_type);
 
 		$this->trans_type = $type;
-		//$this->reference = $Refs->get_next($this->trans_type);
-		$this->reference = $LocRefs->get_next($this->trans_type,$this->Location);
+		$this->reference = $Refs->get_next($this->trans_type);
 		if ($type == ST_CUSTCREDIT)
 		    $this->src_date = $this->document_date;
 
@@ -174,6 +170,11 @@ class cart
 		while (($line_no < count($this->line_items)) && ($srcline = db_fetch($srcdetails))) {
 			$line = &$this->line_items[$line_no];
 			$src_docs[] = $src_type == ST_SALESORDER ?  $srcline['order_no'] : $srcline['debtor_trans_no'];
+			while($srcline['id'] != $line->src_id) // Logic : This will increment the line_items array till sales_order line is matched.
+ 			{	// 0002259: Fixes Delivery note bug : Parent constraints not working if sales order line deleted after delivery 
+     			$line_no++;
+     			$line = &$this->line_items[$line_no];
+ 			}
 			if ($srcline['id'] == $line->src_id) {
 				if ($this->trans_type == ST_SALESINVOICE)
 					$line->src_no = $srcline['debtor_trans_no'];
@@ -196,9 +197,7 @@ class cart
 	//
 	function read($type, $trans_no=0, $prep_child=false) {
 
-		global $SysPrefs, $Refs, $LocRefs;
-
-		
+		global $SysPrefs, $Refs;
 
 		if (!is_array($trans_no)) $trans_no = array($trans_no);
 
@@ -235,12 +234,7 @@ class cart
 				$this->document_date = new_doc_date();
 				if (!is_date_in_fiscalyear($this->document_date))
 					$this->document_date = end_fiscalyear();
-
-				//location wise reference
-				//$this->reference = $Refs->get_next($this->trans_type);
-				$this->reference = $LocRefs->get_next($this->trans_type,$this->Location);
-
-
+				$this->reference = $Refs->get_next($this->trans_type);
 				if ($type != ST_SALESORDER && $type != ST_SALESQUOTE) // Added 2.1 Joe Hunt 2008-11-12
 				{
 					$dim = get_company_pref('use_dimension');
@@ -277,13 +271,12 @@ class cart
 	// Makes parent documents for direct delivery/invoice by recurent call.
 	// $policy - 0 or 1:  writeoff/return for IV, back order/cancel for DN
 	function write($policy=0) { 
-		//begin_transaction(); // prevents partial database changes in case of direct delivery/invoice
-		//if ($this->reference != 'auto' && $this->trans_no == 0 && !is_new_reference($this->reference, $this->trans_type))
-		if ($this->reference != 'auto' && $this->trans_no == 0 && !is_new_loc_reference($this->reference, $this->trans_type,$this->Location))
+		begin_transaction(); // prevents partial database changes in case of direct delivery/invoice
+		if ($this->reference != 'auto' && $this->trans_no == 0 && !is_new_reference($this->reference, $this->trans_type))
 		{
 			commit_transaction();
 			return -1;
-		}
+		}	
 		if (count($this->src_docs) == 0 && ($this->trans_type == ST_SALESINVOICE || $this->trans_type == ST_CUSTDELIVERY)) {
 			// this is direct document - first add parent
 			$ref = $this->reference;
@@ -422,19 +415,6 @@ class cart
 	{
 		$this->Location = $id;
 		$this->location_name = $name;
-	}
-
-	function get_loc_ref($loc)
-	{
-		global $LocRefs;
-		return $LocRefs->get_next($this->trans_type,$loc);
-		
-	}
-
-	function set_salesman($id, $name)
-	{
-		$this->salesman = $id;
-		$this->salesman_name = $name;
 	}
 
 	function set_delivery($shipper, $destination, $address, $freight_cost=null)
@@ -644,12 +624,13 @@ class cart
 			if (has_stock_holding($line_item->mb_flag))
 			{
 				if (!$this->trans_no) // new delivery
-					$qtys[$line_item->stock_id]['qty'] = $line_item->quantity + @$qtys[$line_item->stock_id]['qty'];
+					$qtys[$line_item->stock_id]['qty'] = $line_item->qty_dispatched + @$qtys[$line_item->stock_id]['qty'];
 				else	// DN modification: check change in quantity
-					$qtys[$line_item->stock_id]['qty'] = ($line_item->qty_dispatched-$line_item->quantity) + @$qtys[$line_item->stock_id]['qty'];
+					$qtys[$line_item->stock_id]['qty'] = ($line_item->qty_dispatched-$line_item->qty_old) + @$qtys[$line_item->stock_id]['qty'];
 				$qtys[$line_item->stock_id]['line'] = $line_no;
 			}
 		}
+
 		foreach($qtys as $stock_id => $sum)
 		{
 			if (check_negative_stock($stock_id, -$sum['qty'], $location ? $location : $this->Location, $date ? $date : $this->document_date))
