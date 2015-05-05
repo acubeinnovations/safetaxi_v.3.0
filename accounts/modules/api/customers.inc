@@ -109,7 +109,7 @@ function customer_add()
 	    $info['tax_group_id'] = '1';
 	}
 	if(!isset($info['location'])){
-	    $info['location'] = '1';
+	    $info['location'] = 'DEF';
 	}
 	if(!isset($info['ship_via'])){
 	    $info['ship_via'] = '1';
