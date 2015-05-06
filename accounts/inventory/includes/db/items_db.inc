@@ -105,11 +105,77 @@ function get_item($stock_id)
 	return db_fetch($result);
 }
 
+
+////////////////////////////////
+/****************INVENTORY BY LOCATION CODE LOW STOCK STARTS************************/
+function inventory_by_loc_code_lowstock($loc_code)
+{
+	$sql="SELECT C.description as Category,SMT.stock_id as Product_code,SMT.description as Product_name,SMT.units as UOM,SMO.loc_code as Warehouse_name, SMO.price as Product_price,sum(SMO.qty) as Product_Quantity,SMO.standard_cost as Standard_cost FROM ".TB_PREF."stock_moves AS SMO LEFT JOIN ".TB_PREF."stock_master AS SMT ON SMT.stock_id=SMO.stock_id LEFT JOIN ".TB_PREF."stock_category AS C ON C.category_id=SMT.category_id WHERE SMO.loc_code=".db_escape($loc_code)." GROUP BY SMT.stock_id HAVING SUM(SMO.qty) < 20";
+
+	//$sql="SELECT C.description as Category,SMT.stock_id as Product_code,SMT.description as Product_name,SMT.units as UOM,SMO.loc_code as Warehouse_name, SMO.price as Product_price,sum(SMO.qty) as Product_Quantity,SMO.standard_cost as Standard_cost FROM 0_stock_moves AS SMO LEFT JOIN 0_stock_master AS SMT ON SMT.stock_id=SMO.stock_id LEFT JOIN 0_stock_category AS C ON C.category_id=SMT.category_id WHERE SMO.loc_code='DEF' GROUP BY SMT.stock_id";
+
+	return db_query($sql,"an item could not be retreived");
+
+	
+}
+/****************INVENTORY BY LOCATION CODE LOW STOCK ENDS************************/
+////////////////////////////////
+
+
+/****************INVENTORY BY LOCATION CODE STARTS************************/
+function inventory_by_loc_code($loc_code)
+{
+	$sql="SELECT C.description as Category,SMT.stock_id as Product_code,SMT.description as Product_name,SMT.units as UOM,SMO.loc_code as Warehouse_name, SMO.price as Product_price,sum(SMO.qty) as Product_Quantity,SMO.standard_cost as Standard_cost FROM ".TB_PREF."stock_moves AS SMO LEFT JOIN ".TB_PREF."stock_master AS SMT ON SMT.stock_id=SMO.stock_id LEFT JOIN ".TB_PREF."stock_category AS C ON C.category_id=SMT.category_id WHERE SMO.loc_code=".db_escape($loc_code)." GROUP BY SMT.stock_id";
+
+	//$sql="SELECT C.description as Category,SMT.stock_id as Product_code,SMT.description as Product_name,SMT.units as UOM,SMO.loc_code as Warehouse_name, SMO.price as Product_price,sum(SMO.qty) as Product_Quantity,SMO.standard_cost as Standard_cost FROM 0_stock_moves AS SMO LEFT JOIN 0_stock_master AS SMT ON SMT.stock_id=SMO.stock_id LEFT JOIN 0_stock_category AS C ON C.category_id=SMT.category_id WHERE SMO.loc_code='DEF' GROUP BY SMT.stock_id";
+
+	return db_query($sql,"an item could not be retreived");
+
+	
+}
+/****************INVENTORY BY LOCATION CODE ENDS************************/
+
+/****************INVENTORY BY LOCATION CODE AND CATEGORY ID STARTS************************/
+function inventory_by_loc_code_catid($loc_code, $category_id)
+{
+	
+	$sql="SELECT SMT.stock_id as stock_id,SMT.description as Product_name,SMT.units as UOM,SMT.category_id as Category_id,SMO.loc_code as Warehouse_name, SMO.price as Product_price,sum(SMO.qty) as Product_Quantity,SMO.standard_cost as Standard_cost FROM ".TB_PREF."stock_moves AS SMO LEFT JOIN ".TB_PREF."stock_master AS SMT ON SMT.stock_id=SMO.stock_id 
+	WHERE SMO.loc_code=".db_escape($loc_code)."
+	AND SMT.category_id=".db_escape($category_id)."
+	GROUP BY SMT.stock_id";
+
+	return db_query($sql,"an item could not be retreived");
+
+	
+}
+/****************INVENTORY BY LOCATION CODE AND CATEGORY ID ENDS************************/
+
+function get_items_by_category($category_id)
+{
+	$sql = "SELECT ".TB_PREF."stock_master.*,".TB_PREF."item_tax_types.name AS tax_type_name
+		FROM ".TB_PREF."stock_master,".TB_PREF."item_tax_types
+		WHERE ".TB_PREF."item_tax_types.id=".TB_PREF."stock_master.tax_type_id
+		AND category_id=".db_escape($category_id);
+	return db_query($sql,"an item could not be retreived");
+}
+
 function get_items()
 {
 	$sql = "SELECT * FROM ".TB_PREF."stock_master";
 	return db_query($sql,"items could not be retreived");
 }
+
+/*
+****************
+*/
+function get_items_bycatid($category_id)
+{
+	$sql = "SELECT * FROM ".TB_PREF."stock_master WHERE category_id=".$category_id;
+	return db_query($sql,"items could not be retreived");
+}
+/* 
+***************
+*/
 
 function item_in_foreign_codes($stock_id)
 {

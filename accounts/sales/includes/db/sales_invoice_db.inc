@@ -10,6 +10,12 @@
     See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
 ***********************************************************************/
 //-----------------------------------------------------------------------------
+
+function update_trip($trip_id,$invoice_no){
+	$sql = "UPDATE trips SET invoice_no = ".db_escape($invoice_no)." WHERE id = ".db_escape($trip_id);
+	$res = db_query($sql, 'Trip not invoiced');
+}
+
 //	Add or update Sales Invoice
 //
 function write_sales_invoice(&$invoice)
@@ -73,6 +79,9 @@ function write_sales_invoice(&$invoice)
 	$invoice->sales_type, $sales_order, $invoice->ship_via, 
 	$invoice->due_date, 0, 0, $invoice->dimension_id, 
 	$invoice->dimension2_id, $invoice->payment); 
+
+	update_trip($invoice->trip_id,$invoice_no);
+
 	// 2008-06-14 extra $alloc, 2008-11-12 added dimension_id Joe Hunt
 
 	if ($trans_no == 0) {

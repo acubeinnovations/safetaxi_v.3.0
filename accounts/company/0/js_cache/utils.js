@@ -85,4 +85,3 @@ if(__isGecko){while(offsetParent!=parentNode&&parentNode!==null){res.x-=parentNo
 parentNode=offsetParent.parentNode;offsetParent=offsetParent.offsetParent;}
 }
 if(parentNode!=document.documentElement)return null;return res;}
-function string_contains(haystack,needle){var words=haystack.split(' ');return words.indexOf(needle)>-1;}

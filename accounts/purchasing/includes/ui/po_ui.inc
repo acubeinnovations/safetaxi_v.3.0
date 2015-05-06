@@ -116,7 +116,7 @@ function display_po_header(&$order)
 
 	$editable = ($order->order_no == 0);
 
-	start_outer_table(TABLESTYLE2, "width='80%'");
+	start_outer_table(TABLESTYLE2, 'width=80%');
 
 	table_section(1);
     if ($editable)
@@ -187,7 +187,22 @@ function display_po_header(&$order)
 		date_row(_("Due Date:"), 'due_date', '', false, 0, 0, 0, null, true);
 
   	text_row(_("Supplier's Reference:"), 'supp_ref', null, 16, 15);
-	locations_list_row(_("Receive Into:"), 'StkLocation', null, false, true); 
+
+	
+	
+	//-----------------------------------------------------------------------------
+	//locations_list_row(_("Receive Into:"), 'StkLocation', null, false, true); 
+	if($_SESSION['wa_current_user']->access == SYSTEM_ADMINISTRATOR){
+		locations_list_row(_("Receive Into:"), 'StkLocation', null);	
+	}
+	else{
+		$_POST['StkLocation'] = $_SESSION['wa_current_user']->loc_code;
+		$loc_text = get_stock_location_text($_SESSION['wa_current_user']->loc_code);
+		label_row(_("Receive Into: "), $loc_text , null);
+		hidden('StkLocation');
+		//locations_list_row(_("Receive Into:"), 'StkLocation', null);
+	}
+	//------------------------------------------------------------------------------
 
 	table_section(3);
 
@@ -228,7 +243,7 @@ function display_po_items(&$order, $editable=true)
     display_heading(_("Order Items"));
 
     div_start('items_table');
-    start_table(TABLESTYLE, "width='80%'");
+    start_table(TABLESTYLE, "width=80%");
 
    	$th = array(_("Item Code"), _("Item Description"), _("Quantity"),
 		_("Received"), _("Unit"),
@@ -305,7 +320,7 @@ function display_po_items(&$order, $editable=true)
 
 function display_po_summary(&$po, $is_self=false, $editable=false)
 {
-    start_table(TABLESTYLE, "width='90%'");
+    start_table(TABLESTYLE, "width=90%");
 
     start_row();
     label_cells(_("Reference"), $po->reference, "class='tableheader2'");

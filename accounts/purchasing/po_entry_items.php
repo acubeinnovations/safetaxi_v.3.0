@@ -459,6 +459,8 @@ function handle_commit_order()
 			$supp = get_supplier($cart->supplier_id);
 			$inv->tax_group_id = $supp['tax_group_id'];
 
+			$inv->Location = $cart->Location;
+
 			$inv->ov_amount = $inv->ov_gst = $inv->ov_discount = 0;
 
 			$total = 0;

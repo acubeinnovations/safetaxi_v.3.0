@@ -39,6 +39,21 @@ public function getDriverDetails($data){
 		return false;
 	}
 	}
+
+	public function getDriver($id){ 
+		$this->db->from('drivers');
+		$this->db->where('id',$id);
+		$qry=$this->db->get();
+		
+		if($qry->num_rows() == 1){
+	
+			return $qry->row_array();
+		}else{
+			return false;
+		}
+	}
+
+	
 	/**/
 
 

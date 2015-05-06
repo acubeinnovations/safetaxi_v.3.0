@@ -8,19 +8,30 @@ Free software under GNU GPL
 $path_to_root = "../..";
 
 include_once($path_to_root . "/inventory/includes/inventory_db.inc");
+include_once($path_to_root . "/inventory/includes/db/items_db.inc");
 include_once($path_to_root . "/inventory/includes/db/items_codes_db.inc");
 include_once($path_to_root . "/inventory/includes/db/movement_types_db.inc");
 include_once($path_to_root . "/inventory/includes/db/items_locations_db.inc");
 include_once($path_to_root . "/gl/includes/gl_db.inc");
 include_once($path_to_root . "/includes/ui/items_cart.inc");
 
-function inventory_all($from = null) {
+function inventory_all($category_id,$loc_code,$from = null) {
+
 	if ($from == null) $from = 0;
 
-	$sql = "SELECT * FROM ".TB_PREF."stock_master LIMIT ".$from.", ".RESULTS_PER_PAGE;
+	//$sql = "SELECT * FROM ".TB_PREF."stock_master LIMIT ".$from.", ".RESULTS_PER_PAGE;
+	$sql = "SELECT * FROM ".TB_PREF."stock_master";
 
+	if ($category_id > 0) {
+		$sql.= " WHERE category_id = ".$category_id ; 
+	}
+	
+	$sql.=" LIMIT ".$from.", ".RESULTS_PER_PAGE;
+
+
+	
 	$query = db_query($sql, "error");
-
+    
 	$info = array();
 
 	while($data = db_fetch($query, "error")) {
@@ -29,6 +40,127 @@ function inventory_all($from = null) {
 
 	api_success_response(json_encode($info));
 }
+/**
+***GET INVENTORY BY STOCK ID
+****/
+function inventory_by_stock_id($stock_id,$from = null) {
+	
+	if ($from == null) $from = 0;
+
+	//$sql = "SELECT * FROM ".TB_PREF."stock_master LIMIT ".$from.", ".RESULTS_PER_PAGE;
+	$sql = "SELECT * FROM ".TB_PREF."stock_master";
+	$sql.= " WHERE stock_id = ".$stock_id; 
+	$sql.=" LIMIT ".$from.", ".RESULTS_PER_PAGE;
+
+
+	
+	$query = db_query($sql, "error");
+    
+	$info = array();
+
+	while($data = db_fetch($query, "error")) {
+		
+		$price = get_stock_price_type_currency($data['stock_id'], RETAIL_SALE, 'INR');
+		if($price){
+			$sales_price = $price['price'];
+		}else{
+			$sales_price = 0;
+		}
+
+		$info[] = array('stock_id' => $data['stock_id'], 'category_id' => $data['category_id'], 'tax_type_id' => $data['tax_type_id'], 'description' => $data['description'], 'long_description' => $data['long_description'], 'units' => $data['units'], 'mb_flag' => $data['mb_flag'], 'sales_account' => $data['sales_account'], 'cogs_account' => $data['cogs_account'], 'inventory_account' => $data['inventory_account'], 'sales_account' => $data['sales_account'], 'adjustment_account' => $data['adjustment_account'], 'actual_cost' => $data['actual_cost'], 'material_cost' => $data['material_cost'], 'labour_cost' => $data['labour_cost'], 'overhead_cost' => $data['overhead_cost'], 'inactive' => $data['inactive'],'no_sale' => $data['no_sale'],'sales_price'=>$sales_price);
+	}
+
+	api_success_response(json_encode($info));
+}
+/**
+***GET INVENTORY BY STOCK ID
+****/
+
+/*************/
+/**
+***GET INVENTORY BY LOCATION
+****/
+/*function inventory_by_loc_code($loc_code,$from = null) {
+	
+	if ($from == null) $from = 0;
+
+
+
+	$sql="SELECT SMT.description as Product_name,SMT.units as UOM,SMO.loc_code as Warehouse_name, SMO.price as Product_price,sum(SMO.qty) as Product_Quantity,SMO.standard_cost as Standard_cost FROM ".TB_PREF."stock_moves AS SMO LEFT JOIN ".TB_PREF."stock_master AS SMT ON SMT.stock_id=SMO.stock_id WHERE SMO.loc_code=".$loc_code." GROUP BY SMT.stock_id";
+
+
+	$query = db_query($sql, "error");
+    
+	$info = array();
+
+	while($data = db_fetch($query, "error")) {
+		$info[] = array(
+			'description' => $data['description'], 
+			'units' => $data['units'], 
+			'loc_code' => $data['loc_code'], 
+			'price' => $data['price'], 
+			'qty' => $data['qty'], 
+			'standard_cost' => $data['standard_cost'];
+	}
+
+	api_success_response(json_encode($info));
+}*/
+/**
+***GET INVENTORY BY LOCATION
+****/
+/*************/
+
+/********GET ITEMS BY LOCATION LOW STOCK  STARTS********/
+function get_inventory_by_loc_code_low_stock($loc_code,$from = null) ///inventory/includes/db/items_db.inc
+{
+	if ($from == null) $from = 0;
+	$result = inventory_by_loc_code_lowstock($loc_code);
+	$item = array();
+	while ($row=db_fetch_assoc($result)) {
+		$item[]=$row;
+	}
+	
+	api_success_response(json_encode($item));
+
+}
+
+/********GET ITEMS BY LOCATION LOW STOCK ENDS*********/
+
+
+
+/********GET ITEMS BY LOCATION STARTS********/
+function get_inventory_by_loc_code($loc_code,$from = null) ///inventory/includes/db/items_db.inc
+{
+	if ($from == null) $from = 0;
+	$result = inventory_by_loc_code($loc_code);
+	$item = array();
+	while ($row=db_fetch_assoc($result)) {
+		$item[]=$row;
+	}
+	
+	api_success_response(json_encode($item));
+
+}
+
+/********GET ITEMS BY LOCATION ENDS*********/
+
+/********GET ITEMS BY LOCATION CATEGORY ID STARTS********/
+function get_inventory_by_loc_code_catid($loc_code, $category_id) ///inventory/includes/db/items_db.inc
+{	//exit;
+	//if ($from == null) $from = 0;
+	$result = inventory_by_loc_code_catid($loc_code, $category_id);
+
+	//$result = inventory_by_loc_code_catid($loc_code,$category_id='6');
+	$item = array(); 
+	while ($row=db_fetch_assoc($result)) {
+		$item[]=$row;
+	}
+	
+	api_success_response(json_encode($item));
+
+}
+
+/********GET ITEMS BY LOCATION CATEGORY IDENDS*********/
 
 function inventory_get($id)
 {
@@ -243,6 +375,15 @@ function inventory_locations_all()
 
 }
 
+function inventory_location($loc_code)
+{
+
+	$location =get_item_location($loc_code);
+	
+	api_success_response(json_encode($location));
+
+}
+
 function inventory_location_add()
 {	// Added by Richard Vinke
 	$app = \Slim\Slim::getInstance('SASYS');
@@ -366,5 +507,18 @@ function stock_adjustment_add($info)
 	api_create_response("Stock Adjustment has been added");
 
 }
+
+function cat_product_count($cat_id=NULL)
+{
+	$sql = "SELECT COUNT(*) FROM ".TB_PREF."stock_master";
+	if($cat_id != NULL){
+		$sql .= " WHERE category_id = ".db_escape($cat_id);
+	}
+	$query = db_query($sql, "error");
+	$data = db_fetch_row($query, "error");
+	
+	api_success_response(json_encode($data));
+}
+
 
 ?>

@@ -49,13 +49,13 @@ if ($Mode=='ADD_ITEM' || $Mode=='UPDATE_ITEM')
     	{
     		/*selected_id could also exist if submit had not been clicked this code would not run in this case cos submit is false of course  see the delete code below*/
 			update_salesman($selected_id, $_POST['salesman_name'], $_POST['salesman_phone'], $_POST['salesman_fax'],
-				$_POST['salesman_email'], input_num('provision'), input_num('break_pt'), input_num('provision2'));
+				$_POST['salesman_email'], input_num('provision'), input_num('break_pt'), input_num('provision2'),$_POST['loc_code']);
     	}
     	else
     	{
     		/*Selected group is null cos no item selected on first time round so must be adding a record must be submitting new entries in the new Sales-person form */
 			add_salesman($_POST['salesman_name'], $_POST['salesman_phone'], $_POST['salesman_fax'],
-				$_POST['salesman_email'], input_num('provision'), input_num('break_pt'), input_num('provision2'));
+				$_POST['salesman_email'], input_num('provision'), input_num('break_pt'), input_num('provision2'),$_POST['loc_code']);
     	}
 
     	if ($selected_id != -1) 
@@ -95,8 +95,8 @@ if ($Mode == 'RESET')
 $result = get_salesmen(check_value('show_inactive'));
 
 start_form();
-start_table(TABLESTYLE, "width='60%'");
-$th = array(_("Name"), _("Phone"), _("Fax"), _("Email"), _("Provision"), _("Break Pt."), _("Provision")." 2", "", "");
+start_table(TABLESTYLE, "width=60%");
+$th = array(_("Name"), _("Phone"), _("Fax"), _("Email"), _("Warehouse"), _("Provision"), _("Break Pt."), _("Provision")." 2", "", "");
 inactive_control_column($th);
 table_header($th);
 
@@ -111,6 +111,7 @@ while ($myrow = db_fetch($result))
    	label_cell($myrow["salesman_phone"]);
    	label_cell($myrow["salesman_fax"]);
 	email_cell($myrow["salesman_email"]);
+	label_cell($myrow["warehouse"]);
 	label_cell(percent_format($myrow["provision"])." %", "nowrap align=right");
    	amount_cell($myrow["break_pt"]);
 	label_cell(percent_format($myrow["provision2"])." %", "nowrap align=right");
@@ -142,6 +143,7 @@ if ($selected_id != -1)
 		$_POST['provision'] = percent_format($myrow["provision"]);
 		$_POST['break_pt'] = price_format($myrow["break_pt"]);
 		$_POST['provision2'] = percent_format($myrow["provision2"]);
+		$_POST['loc_code'] = $myrow["loc_code"];
 	}
 	hidden('selected_id', $selected_id);
 } elseif ($Mode != 'ADD_ITEM') {
@@ -159,6 +161,7 @@ email_row_ex(_("E-mail:"), 'salesman_email', 40);
 percent_row(_("Provision").':', 'provision');
 amount_row(_("Break Pt.:"), 'break_pt');
 percent_row(_("Provision")." 2:", 'provision2');
+locations_list_row(_("Warehouse:"), 'loc_code', null);
 end_table(1);
 
 submit_add_or_update_center($selected_id == -1, '', 'both');

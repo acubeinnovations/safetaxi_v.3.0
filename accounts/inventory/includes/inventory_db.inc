@@ -77,4 +77,15 @@ function send_reorder_email($loc, $st_ids, $st_names, $st_num, $st_reorder)
 	$mail->text($msg);
 	return $mail->send();
 }
+
+
+//get location description with its code
+function get_stock_location_text($loc_code){
+	
+	$sql = "SELECT location_name FROM ".TB_PREF."locations WHERE loc_code = ".db_escape($loc_code);
+	$res = db_query($sql,"a location could not be retreived");
+	$loc = db_fetch($res);
+	return $loc['0'];
+}
+
 ?>

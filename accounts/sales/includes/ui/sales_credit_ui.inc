@@ -15,9 +15,9 @@ include_once($path_to_root . "/includes/ui.inc");
 
 function display_credit_header(&$order)
 {
-	global $Ajax, $Refs;
+	global $Ajax, $Refs,$LocRefs;
 
-	start_outer_table(TABLESTYLE, "width='80%'");
+	start_outer_table(TABLESTYLE, "width=80%");
 	table_section(1);
 
 	$customer_error = "";
@@ -80,7 +80,9 @@ function display_credit_header(&$order)
 	set_global_customer($_POST['customer_id']);
 
 	if (!isset($_POST['ref']))
-		$_POST['ref'] = $Refs->get_next(ST_CUSTCREDIT);
+		$_POST['ref'] = $LocRefs->get_next(ST_CUSTCREDIT,$order->Location);
+		//$_POST['ref'] = $Refs->get_next(ST_CUSTCREDIT);
+
 	if ($order->trans_no==0)
 	    ref_row(_("Reference").':', 'ref');
 	else
@@ -163,7 +165,7 @@ function display_credit_items($title, &$order)
 
     display_heading($title);
     div_start('items_table');
-    start_table(TABLESTYLE, "width='90%'");
+    start_table(TABLESTYLE, "width=90%");
     $th = array(_("Item Code"), _("Item Description"), _("Quantity"), _("Unit"),
 	_("Price"), _("Discount %"), _("Total"),'');
 

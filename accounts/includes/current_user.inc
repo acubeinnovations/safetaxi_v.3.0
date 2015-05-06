@@ -32,6 +32,7 @@ class current_user
 	var $old_db;
 	var $logged;
 	var $ui_mode = 0;
+	var $loc_code = 0;
 	
 	var $prefs;
 	var $cur_con; // current db connection (can be different from $company for superuser)
@@ -80,6 +81,7 @@ class current_user
 		if ($Auth_Result)
 		{
 			$myrow = get_user_by_login($loginname);
+
 			$this->old_db = isset($myrow["full_access"]);
 			if (! @$myrow["inactive"]) {
 				if ($this->old_db) { 
@@ -122,6 +124,8 @@ class current_user
         	    $this->prefs = new user_prefs($myrow);
         	    $this->user = @$myrow["id"];
                 $this->email = @$myrow["email"];
+		$this->loc_code = 'DEF';//static
+
 		    	update_user_visitdate($this->username);
 		    	$this->logged = true;
 				$this->last_act = time();
@@ -139,18 +143,18 @@ class current_user
 
 		set_global_connection();
 
-		$user = get_user_by_email($email);
+		$myrow = get_user_by_email($email);
 
-		if ($user != false) {
+		if ($myrow['id'] != "") {
 
 			$bytes = openssl_random_pseudo_bytes(8, $cstrong);
 			$password   = base64_encode($bytes);
 
 			$hash = md5($password);
 
-			update_user_password($user['id'], $user['user_id'], $hash);
+			update_user_password($myrow['id'], $myrow['user_id'], $hash);
 
-			mail($user['email'], _("New password for")." ".$app_title, $password);
+			mail($myrow['email'], _("New password for")." ".$app_title, $password);
 
 			return true;
 		}

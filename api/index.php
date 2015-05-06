@@ -166,13 +166,13 @@ $app->get('/trip-logs', function() use ($app) {
 	//===========================================================================================
 	// FA Part Start
 
-		$dist_from_web			=			$trips['distance_in_km_from_web'];
-		$minkm							=			$trips['minimum_kilometers'];
-		$addtnlkmrate				=			$trips['additional_kilometer_rate'];
-		$rate								=			$trips['rate'];
-		$fa_customer_id			=			$trips['fa_customer_id'];
-		$tripNarration			=			'Trip Id - '.$id;
-		$tripDate						=			$trips['pick_up_date'];
+		$dist_from_web			= $trips['distance_in_km_from_web'];
+		$minkm				= $trips['minimum_kilometers'];
+		$addtnlkmrate			= $trips['additional_kilometer_rate'];
+		$rate				= $trips['rate'];
+		$fa_customer_id			= $trips['fa_customer_id'];
+		$tripNarration			= 'Trip Id - '.$id;
+		$tripDate			= $trips['pick_up_date'];
 
 		if($dataArray['distance_in_km_from_app'] > $dist_from_web){
 			$dist_for_calc=$dataArray['distance_in_km_from_app'];
@@ -187,14 +187,14 @@ $app->get('/trip-logs', function() use ($app) {
 			$dataArray['total_amount']	= $rate;
 		}
 
-
+		$items[] = array('price' =>$dataArray['total_amount'],'discount' =>0);//trip details array
 		//salesinvoice
-		$cart = array(
+		$cart = array('trip_id' => $id,
 				'fa_customer_id' => $fa_customer_id, //from customers table
 				'comments' 	=> $tripNarration,
-				'delivery_date' => $tripDate,
-				'order_date' 	=> $tripDate,
-				'items'		=> array('price' =>$dataArray['total_amount'],'discount' =>0)//trip details array
+				'delivery_date' => $tripDate,//mysql date format
+				'order_date' 	=> $tripDate,//mysql date format
+				'items'		=> $items
 				);
 
 		$method = isset($_GET['m']) ? $_GET['m'] : 'p';

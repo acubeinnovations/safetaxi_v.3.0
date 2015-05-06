@@ -13,7 +13,7 @@ include_once($path_to_root . "/includes/db/crm_contacts_db.inc");
 function supplier_all($from = null) {
 	if ($from == null) $from = 0;
 
-	$sql = "SELECT * FROM ".TB_PREF."suppliers LIMIT ".$from.", ".RESULTS_PER_PAGE;
+	$sql = "SELECT * FROM ".TB_PREF."suppliers  LIMIT ".$from.", ".RESULTS_PER_PAGE;
 
 	$query = db_query($sql, "error");
 
@@ -41,7 +41,7 @@ function supplier_add()
 	$app = \Slim\Slim::getInstance('SASYS');
 	$req = $app->request();
 	$info = $req->post();
-
+	//print_r($app); exit;
 	// Validate Required Fields
 	if(!isset($info['supp_name'])){
 		api_error(412, 'Supplier Name is required [supp_name]');

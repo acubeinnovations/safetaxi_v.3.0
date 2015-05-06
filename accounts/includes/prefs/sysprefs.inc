@@ -56,11 +56,6 @@ class sys_prefs
 		return $this->prefs['default_workorder_required'];
 	}
 
-	function default_quote_valid_days() 
-	{
-		return $this->prefs['default_quote_valid_days'];
-	}
-
 	function default_delivery_required_by() 
 	{
 		return $this->prefs['default_delivery_required'];

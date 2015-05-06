@@ -1,0 +1,8 @@
+tmp
+company
+modules/_cache
+lang
+sql/changes.sql
+company/0/installed_extensions.php
+installed_extensions.php
+config_db.php

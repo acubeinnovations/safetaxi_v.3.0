@@ -19,6 +19,7 @@ class Fabridge
 	public function open($method="g", $action, $record="", $filter=false, $data=false) {
 
 		$api_url = base_url()."accounts/modules/api";
+		
 
 		$url = $api_url . "/$action/$record";
 		if ($filter) $url .= "/$filter";
@@ -56,7 +57,7 @@ class Fabridge
 
 			case 't':
 				curl_setopt($handle, CURLOPT_CUSTOMREQUEST, 'PUT');
-				curl_setopt($handle, CURLOPT_POSTFIELDS, $data);
+				curl_setopt($handle, CURLOPT_POSTFIELDS, http_build_query($data));
 				break;
 
 			case 'd':

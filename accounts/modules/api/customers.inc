@@ -14,7 +14,7 @@ function customer_all($from = null) {
 	if ($from == null) $from = 0;
 
 	$sql = "SELECT * FROM ".TB_PREF."debtors_master WHERE !inactive LIMIT ".$from.", ".RESULTS_PER_PAGE;
-
+	
 	$query = db_query($sql, "error");
 
 	$info = array();
@@ -41,6 +41,7 @@ function customer_add()
 	$app = \Slim\Slim::getInstance('SASYS');
 	$req = $app->request();
 	$info = $req->post();
+	//api_success_response(json_encode($info));
 
 	//default values
 	global $SysPrefs;
@@ -54,8 +55,7 @@ function customer_add()
 
 	$info['dimension_id'] = 0;
 	$info['dimension2_id'] = 0;
-	
-	
+
 	// Validate Required Fields
 	if(!isset($info['custname'])){
 		api_error(412, 'Customer Name is required [custname]');
@@ -109,7 +109,7 @@ function customer_add()
 	    $info['tax_group_id'] = '1';
 	}
 	if(!isset($info['location'])){
-	    $info['location'] = '1';
+	    $info['location'] = 'DEF';
 	}
 	if(!isset($info['ship_via'])){
 	    $info['ship_via'] = '1';
@@ -204,7 +204,7 @@ function customer_add()
 	}
 	$cust = get_customer($selected_id);
 	if($cust != null){
-		api_create_response(json_encode($cust));
+		api_success_response(json_encode($cust));
 	}else {
 		api_error(500, 'Could Not Save to Database');
 	}
@@ -216,7 +216,6 @@ function customer_edit($id){
 	$app = \Slim\Slim::getInstance('SASYS');
 	$req = $app->request();
 	$info = $req->post();
-
 	//default values
 	global $SysPrefs;
 
@@ -224,14 +223,16 @@ function customer_edit($id){
 	if($cust == null){
 		api_error(400, 'Invalid Customer ID');
 	}else{
-		$info['tax_id'] = '';
-		$info['curr_code'] = get_company_currency();
-		$info['credit_status'] = -1;
-		$info['payment_terms'] = 4;//cash only
-		$info['discount'] = $info['pymt_discount'] = 0;
-		$info['credit_limit'] = $SysPrefs->default_credit_limit();
-		$info['sales_type'] = -1;
+		$info['tax_id'] = $cust['tax_id'];
+		$info['curr_code'] = $cust['curr_code'];
+		$info['credit_status'] = $cust['credit_status'];
+		$info['payment_terms'] = $cust['payment_terms'];
+		$info['discount'] = $cust['discount'];
+		$info['pymt_discount'] = $cust['pymt_discount'];
+		$info['credit_limit'] = $cust['credit_limit'];
+		$info['sales_type'] = $cust['sales_type'];
 	}
+
 
 	// Validate Required Fields
 	if(!isset($info['custname'])){
@@ -275,11 +276,11 @@ function customer_edit($id){
 		$info['notes'] = '';
 	}
 
-	/*
-	$customer_id, $CustName, $cust_ref, $address, $tax_id, $curr_code,
-	$dimension_id, $dimension2_id, $credit_status, $payment_terms, $discount, $pymt_discount,
-	$credit_limit, $sales_type, $notes
-	*/
+	
+	//$customer_id, $CustName, $cust_ref, $address, $tax_id, $curr_code,
+	//$dimension_id, $dimension2_id, $credit_status, $payment_terms, $discount, $pymt_discount,
+	//$credit_limit, $sales_type, $notes
+	
 	update_customer(
 		$id,
 		$info['custname'],
@@ -299,6 +300,7 @@ function customer_edit($id){
 	);
 
 	api_success_response("Customer has been updated");
+	
 
 }
 
@@ -375,5 +377,71 @@ function customer_branches_get($id){
 	api_success_response(json_encode($ret));
 
 }
+
+function customer_n_branch_get($id){
+
+	/*$sql = "SELECT debtor.*," 
+		."b.branch_code, "
+		."b.default_ship_via, "
+		."b.branch_ref, "
+		."b.br_name, "
+		."p.name as contact_name, "
+		."a.description, "
+		."p.phone, "
+		."p.fax, "
+		."p.email, "
+		."t.name AS tax_group_name, "
+		."b.inactive
+		FROM ".TB_PREF."debtors_master debtor, ".TB_PREF."cust_branch b "
+		. "LEFT JOIN ".TB_PREF."crm_contacts c
+			ON c.entity_id=b.branch_code AND c.type='cust_branch' AND c.action='general'
+			LEFT JOIN ".TB_PREF."crm_persons p on c.person_id=p.id,"
+			.TB_PREF."areas a, "
+			.TB_PREF."tax_groups t
+		WHERE b.tax_group_id=t.id
+		AND b.area=a.area_code
+		AND b.debtor_no = debtor.debtor_no
+		AND debtor.debtor_no=".db_escape($id);*/
+$sql = "SELECT debtor.* FROM ".TB_PREF."debtors_master debtor WHERE debtor.debtor_no=".db_escape($id);
+		
+		
+
+	$result = db_query($sql,"Cannot Get Customer");
+
+	$ret = db_fetch($result);
+
+	/*$ref = get_loc_next_reference($loc_code,$trans_type);
+
+	if(!$ret){
+		$ret = array();
+	} else{
+		$ret['next_ref'] = $ref;
+	}*/
+
+	api_success_response(json_encode($ret));
+
+}
+
+/* get Customer By name*/
+function customer_by_name($name) //sales/includes/db/customers_db.inc
+{
+
+	$cust = get_customer_by_name($name);
+	$info = array();
+
+	while($data = db_fetch($cust)) {
+		array_push($info, $data['name']." (ID:".$data['debtor_no'].")");
+	}
+
+
+
+	 
+	api_success_response(json_encode($info));
+
+}
+/* get Customer By name*/
+
+
+
 
 ?>

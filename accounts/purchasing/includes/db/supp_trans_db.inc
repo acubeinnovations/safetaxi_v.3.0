@@ -14,7 +14,7 @@
 //	FIXME - this should be revised for transaction update case.
 //
 function write_supp_trans($type, $trans_no, $supplier_id, $date_, $due_date, $reference, $supp_reference,
-	$amount, $amount_tax, $discount, $err_msg="", $rate=0, $included=0)
+	$amount, $amount_tax, $discount, $err_msg="", $rate=0, $included=0,$loc_code='')
 {
 	$new = $trans_no==0;
 	$date = date2sql($date_);
@@ -33,11 +33,11 @@ function write_supp_trans($type, $trans_no, $supplier_id, $date_, $due_date, $re
 
 
 	$sql = "INSERT INTO ".TB_PREF."supp_trans (trans_no, type, supplier_id, tran_date, due_date,
-		reference, supp_reference, ov_amount, ov_gst, rate, ov_discount, tax_included) ";
+		reference, supp_reference, ov_amount, ov_gst, rate, ov_discount, tax_included,loc_code) ";
 	$sql .= "VALUES (".db_escape($trans_no).", ".db_escape($type)
 	.", ".db_escape($supplier_id).", '$date', '$due_date',
 		".db_escape($reference).", ".db_escape($supp_reference).", ".db_escape($amount)
-		.", ".db_escape($amount_tax).", ".db_escape($rate).", ".db_escape($discount).", ".db_escape($included).")";
+		.", ".db_escape($amount_tax).", ".db_escape($rate).", ".db_escape($discount).", ".db_escape($included).", ".db_escape($loc_code).")";
 
 	if ($err_msg == "")
 		$err_msg = "Cannot insert a supplier transaction record";
@@ -163,7 +163,7 @@ function post_void_supp_trans($type, $type_no)
 
 //----------------------------------------------------------------------------------------
 
-function get_sql_for_supplier_inquiry($filter, $after_date, $to_date, $supplier_id=ALL_TEXT)
+function get_sql_for_supplier_inquiry($filter, $after_date, $to_date, $supplier_id=ALL_TEXT, $loc_code ='')
 {
     $date_after = date2sql($after_date);
     $date_to = date2sql($to_date);
@@ -185,6 +185,13 @@ function get_sql_for_supplier_inquiry($filter, $after_date, $to_date, $supplier_
      	AND trans.tran_date >= '$date_after'
     	AND trans.tran_date <= '$date_to'
 		AND trans.ov_amount != 0";	// exclude voided transactions
+
+	
+	if($loc_code != ""){
+		$sql .= " AND trans.loc_code = ".db_escape($loc_code);
+	}
+	
+
 
 	$sql2 = "SELECT ".ST_SUPPRECEIVE." as type, 
 		trans.id as trans_no,

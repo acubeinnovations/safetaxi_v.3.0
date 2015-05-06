@@ -61,7 +61,7 @@ class Fabridge
 
 			case 't':
 				curl_setopt($handle, CURLOPT_CUSTOMREQUEST, 'PUT');
-				curl_setopt($handle, CURLOPT_POSTFIELDS, $data);
+				curl_setopt($handle, CURLOPT_POSTFIELDS, http_build_query($data));
 				break;
 
 			case 'd':

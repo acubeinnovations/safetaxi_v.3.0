@@ -241,7 +241,7 @@ function display_companies()
 	$coyno = $_SESSION["wa_current_user"]->company;
 
 	echo "
-		<script type='text/javascript'>
+		<script language='javascript'>
 		function deleteCompany(id, name) {
 			if (!confirm('" . _("Are you sure you want to delete company no. ") . "'+id+' '+name+'?'))
 				return

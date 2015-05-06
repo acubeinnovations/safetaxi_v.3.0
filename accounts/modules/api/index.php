@@ -1,4 +1,5 @@
 <?php
+
 /**********************************************
 Author: Andres Amaya
 Name: SASYS REST API
@@ -27,7 +28,7 @@ global $security_areas, $security_groups, $security_headings, $path_to_root, $db
 $page_security = 'SA_API';
 
 include_once (API_ROOT . "/session-custom.inc");
-include_once (API_ROOT . "/vendor/autoload.php");
+include_once (API_ROOT . "/Slim/Slim/Slim.php");
 
 \Slim\Slim::registerAutoloader();
 
@@ -42,11 +43,26 @@ include_once(FA_ROOT . "/includes/data_checks.inc");
 // echo "cust delivery => ".ST_CUSTDELIVERY;
 // echo "cust credit => ".ST_CUSTCREDIT;
 
-$rest = new \Slim\Slim(array(
+/*$rest = new \Slim\Slim(array(
 	'log.enabled' => true,
 	'mode' => 'debug',
 	'debug' => true
+));*/
+
+$rest = new \Slim\Slim(array(
+	'mode' => 'development'
 ));
+
+// Only invoked if mode is "development"
+$rest->configureMode('development', function () use ($rest) {
+    $rest->config(array(
+        'log.enable' => false,
+        'debug' => true
+    ));
+});
+
+
+
 $rest->setName('SASYS');
 
 // API Login Hook
@@ -54,9 +70,24 @@ api_login();
 
 $req	= $rest->request();
 
-define("RESULTS_PER_PAGE", 2);
+define("RESULTS_PER_PAGE", 50);
 
 // API Routes
+//-----------------------------ADMIN---------------------------------
+$rest->get('/company/', function() use ($rest){
+	include_once (API_ROOT . "/admin.inc");
+	company_get();
+});
+
+//-----------------------------ADMIN---------------------------------
+$rest->get('/admin/', function() use ($rest){
+	include_once (API_ROOT . "/admin.inc");
+	admin_get();
+});
+
+
+
+
 // ------------------------------- Items -------------------------------
 // Get Items
 $rest->get('/inventory/', function() use ($rest){
@@ -74,6 +105,119 @@ $rest->get('/inventory/', function() use ($rest){
 		inventory_all($from);
 	}
 });
+
+/***
+** GET INVENTORY ITEMS BY STOCK ID STARTS----------------------
+****/
+$rest->get('/inventorybystockid/:stock_id/', function($stock_id) use ($rest){
+
+	global $req;
+	include_once (API_ROOT . "/inventory.inc");
+
+	$page	= $req->get("page");
+
+	if ($page == null) {
+		inventory_by_stock_id($stock_id);
+	} else {
+		// If page = 1 the value will be 0, if page = 2 the value will be 1, ...
+		$from = --$page * RESULTS_PER_PAGE;
+		inventory_by_stock_id(stock_id,$from);
+	}
+});
+/****/
+/***
+** GET INVENTORY ITEMS BY LOCATION LOW STOCK  STARTS----------------------
+****/
+$rest->get('/inventorybylocodelowstock/:loc_code', function($loc_code) use ($rest){
+/***********/
+global $req;
+	include_once (API_ROOT . "/inventory.inc");
+
+	$page	= $req->get("page");
+
+	if ($page == null) {
+		get_inventory_by_loc_code_low_stock($loc_code);
+	} else {
+		// If page = 1 the value will be 0, if page = 2 the value will be 1, ...
+		$from = --$page * RESULTS_PER_PAGE;
+		get_inventory_by_loc_code_low_stock($loc_code,$from);
+	}
+	
+});
+/****/
+/***
+** GET INVENTORY ITEMS BY LOCATION LOW STOCK ENDS------------------------
+****/
+
+/** GET INVENTORY ITEMS BY LOCATION STARTS----------------------
+****/
+$rest->get('/inventorybylocode/:loc_code', function($loc_code) use ($rest){
+/***********/
+global $req;
+	include_once (API_ROOT . "/inventory.inc");
+
+	$page	= $req->get("page");
+
+	if ($page == null) {
+		get_inventory_by_loc_code($loc_code);
+	} else {
+		// If page = 1 the value will be 0, if page = 2 the value will be 1, ...
+		$from = --$page * RESULTS_PER_PAGE;
+		get_inventory_by_loc_code($loc_code,$from);
+	}
+	
+});
+/****/
+/***
+** GET INVENTORY ITEMS BY LOCATION ENDS------------------------
+****/
+
+
+/****/
+/***
+** GET INVENTORY ITEMS BY LOCATION CATEGORY ID STARTS----------------------
+****/
+
+//////////////////////////////////////////
+/*$rest->get('/sales/:trans_no/:trans_type', function($trans_no, $trans_type) use ($rest){
+	include_once (API_ROOT . "/sales.inc");
+	sales_get($trans_no, $trans_type);
+});*/
+//////////////////////////////////////////
+$rest->get('/inventorybylocodecatid/:loc_code/:category_id', function($loc_code, $category_id) use ($rest){
+/***********/
+global $req;
+	include_once (API_ROOT . "/inventory.inc");
+
+	$page	= $req->get("page");
+
+	
+		get_inventory_by_loc_code_catid($loc_code, $category_id);
+	
+	
+});
+/****/
+/***
+** GET INVENTORY ITEMS BY LOCATION CATEGORY ID ENDS------------------------
+****/
+
+//***********
+// Get Items
+$rest->get('/inventory/:category_id/', function($category_id) use ($rest){
+	
+	global $req;
+	include_once (API_ROOT . "/inventory.inc");
+	$page	= $req->get("page");
+
+	if ($page == null) {
+		inventory_all($category_id);
+	} else {
+		// If page = 1 the value will be 0, if page = 2 the value will be 1, ...
+		$from = --$page * RESULTS_PER_PAGE;
+		inventory_all($category_id,$from);
+	}
+});
+//***********
 // Get Specific Item by Stock Id
 $rest->get('/inventory/:id', function($id) use ($rest) {
 
@@ -114,9 +258,20 @@ $rest->get('/movementtypes/', function() use ($rest){
 // Get Locations
 $rest->get('/locations/', function() use ($rest){
 	include_once (API_ROOT . "/inventory.inc");
+	
 	inventory_locations_all();
+});
+
+$rest->get('/locations/:loc_code', function($loc_code) use ($rest){
+	include_once (API_ROOT . "/inventory.inc");
+	
+	inventory_location($loc_code);
+	
 
 });
+
+
+
 
 // Add Location, added by Richard Vinke
 $rest->post('/locations/', function() use ($rest){
@@ -151,6 +306,15 @@ $rest->get('/category/', function() use ($rest){
 		category_all($from);
 	}
 });
+
+
+//Get category count
+$rest->get('/categorycount/', function() use ($rest){
+	include_once (API_ROOT . "/category.inc");
+	category_count();
+});
+
+
 // Get Specific Item Category
 $rest->get('/category/:id', function($id) use ($rest) {
 	include_once (API_ROOT . "/category.inc");
@@ -175,6 +339,8 @@ $rest->delete('/category/:id', function($id) use ($rest){
 	category_delete($id);
 
 });
+
+
 // ------------------------------- Item Categories -------------------------------
 
 // ------------------------------- Tax Types -------------------------------
@@ -217,12 +383,38 @@ $rest->get('/taxgroups/', function() use ($rest){
 
 // ------------------------------- Customers -------------------------------
 // Customers
+
+
+// Get Customer and Branch General Info
+$rest->get('/customer_n_branch/:id', function($id) use ($rest){
+	include_once (API_ROOT . "/customers.inc");
+	customer_n_branch_get($id);
+
+});
+
+
+
+// Get Customer By Name
+$rest->get('/customername/:name', function($name) use ($rest){
+include_once (API_ROOT . "/customers.inc");
+customer_by_name($name);
+
+});
+
 // Get Customer General Info
 $rest->get('/customers/:id', function($id) use ($rest){
 	include_once (API_ROOT . "/customers.inc");
 	customer_get($id);
 
 });
+
+// Get Customer and Branch General Info
+$rest->get('/customer_n_branch/:id/:trans_type', function($id,$trans_type) use ($rest){
+	include_once (API_ROOT . "/customers.inc");
+	customer_n_branch_get($id,$trans_type);
+
+});
+
 // All Customers
 $rest->get('/customers/', function() use ($rest){
 	global $req;
@@ -283,6 +475,7 @@ $rest->get('/suppliers/:id', function($id) use ($rest){
 });
 // Add Supplier
 $rest->post('/suppliers/', function() use ($rest){
+	
 	include_once (API_ROOT . "/suppliers.inc");
 	supplier_add();
 
@@ -306,6 +499,36 @@ $rest->get('/suppliers/:id/contacts/', function($id) use ($rest){
 
 });
 // ------------------------------- Suppliers -------------------------------
+
+
+
+// ------------------------------- SalesMan -------------------------------
+// SalesMan
+
+// Add SalesMan
+/*$rest->post('/salesman/', function() use ($rest){
+	
+	include_once (API_ROOT . "/salesman.inc");
+	salesman_add();
+
+});*/
+
+// Edit SalesMan
+
+$rest->post('/salesman/', function($id) use ($rest){
+	include_once (API_ROOT . "/salesman.inc");
+
+	if($id > 0)
+		salesman_edit($id);
+	else
+		salesman_add();
+
+});
+
+// ------------------------------- SalesMan -------------------------------
+
+
+
 
 // ------------------------------- Bank Accounts -------------------------------
 // Bank Accounts
@@ -408,6 +631,16 @@ $rest->put('/itemcosts/:id', function($id) use ($rest){
 	itemcosts_update($id);
 
 });
+
+//Get product count
+$rest->get('/catproductcount/:cat', function($cat) use ($rest){
+
+	include_once (API_ROOT . "/inventory.inc");
+	
+	cat_product_count($cat);
+	
+});
+
 // ------------------------------- Inventory Costs -------------------------------
 
 // ------------------------------- Assets -------------------------------
@@ -454,7 +687,6 @@ $rest->post('/tripinvoice/', function() use ($rest){
 	tripinvoice_add();
 
 });
-//------------------------------------------------------------------------------
 
 
 // ------------------------------- Sales Order Entry -------------------------------
@@ -496,7 +728,83 @@ $rest->get('/sales/:trans_type/', function($trans_type) use ($rest){
 		sales_all($trans_type, $from);
 	}
 });
+// All Sales By Location
+$rest->get('/getsalesbylocation/:trans_type/:location', function($trans_type, $location) use ($rest){
+	global $req;
+	include_once (API_ROOT . "/sales.inc");
+
+	$page	= $req->get("page");
+
+	if ($page == null) {
+		sales_by_location($trans_type, $location);
+	} else {
+		// If page = 1 the value will be 0, if page = 2 the value will be 1, ...
+		$from = --$page * RESULTS_PER_PAGE;
+		sales_by_location($trans_type, $location, $from);
+	}
+});
 // ------------------------------- Sales Order Entry -------------------------------
+
+// Insert Sales invoice
+$rest->post('/salesinvoice/', function() use ($rest){
+    include_once (API_ROOT . "/sales.inc");
+    salesinvoice_add();
+
+});
+
+
+// ------------------------------- Cancel A Sale -------------------------------
+// Void Sale
+
+
+
+$rest->post('/voidsale/', function() use ($rest){
+include_once (API_ROOT . "/sales.inc");
+void_add();
+
+});
+
+// ------------------------------- Cancel A Sale -------------------------------
+
+
+//<<<<<<<<<<<<----------get tax transaction for salesinvoice-----------------------
+
+$rest->get('/taxtransaction/:trans_no',function($trans_no) use ($rest){
+	include_once(API_ROOT . "/sales.inc");
+	get_tax_items($trans_no);
+});
+
+//----------------------get tax transaction for salesinvoice -->>>>>>>>>>>>>>>>>>>>
+
+
+
+
+// ------------------------------- Purchase -------------------------------
+
+// All purchase
+$rest->get('/purchase/:trans_type/', function($trans_type) use ($rest){
+	global $req;
+	include_once (API_ROOT . "/purchase.inc");
+
+	$page	= $req->get("page");
+
+	if ($page == null) {
+		purchase_all($trans_type);
+	} else {
+		// If page = 1 the value will be 0, if page = 2 the value will be 1, ...
+		$from = --$page * RESULTS_PER_PAGE;
+		purchase_all($trans_type, $from);
+	}
+});
+
+// All purchase
+$rest->post('/purchasesearch/', function() use ($rest){
+    include_once (API_ROOT . "/purchase.inc");
+    purchase_search();
+
+});
+
+
 
 // Init API
 $rest->run();

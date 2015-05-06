@@ -5,3 +5,7 @@ ADD `fa_customer_id` INT NOT NULL AFTER `minimum_km` ,
 ADD INDEX ( `fa_customer_id` ) ;
 
 
+
+ALTER TABLE `drivers`  ADD `fa_customer_id` INT(11) NOT NULL AFTER `status_description`,  ADD INDEX (`fa_customer_id`) ;
+
+

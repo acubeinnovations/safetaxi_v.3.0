@@ -159,7 +159,7 @@ function add_supp_invoice($supp_trans, $invoice_no=0) // do not receive as ref b
     /*First insert the invoice into the supp_trans table*/
 	$invoice_id = write_supp_trans($trans_type, 0, $supp_trans->supplier_id, $date_, $supp_trans->due_date,
 		$supp_trans->reference, $supp_trans->supp_reference,
-		$invoice_items_total, $item_added_tax, $supp_trans->ov_discount, "", 0, $supp_trans->tax_included);
+		$invoice_items_total, $item_added_tax, $supp_trans->ov_discount, "", 0, $supp_trans->tax_included,$supp_trans->Location);
 
 	$total = 0;
 
