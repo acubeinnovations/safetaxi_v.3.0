@@ -1,12 +1,12 @@
-<?php 
+<?php
 class Trip_booking_model extends CI_Model {
-	
+
 	function getDriver($vehicle_id){
 
 	$this->db->from('vehicle_drivers');
 	$condition=array('vehicle_id'=>$vehicle_id,'to_date'=>'9999-12-30');
     $this->db->where($condition);
-	
+
     $results = $this->db->get()->result();
 	if(count($results)>0){
 	return $results[0]->driver_id;
@@ -17,7 +17,7 @@ class Trip_booking_model extends CI_Model {
 	$this->db->from('trips');
 	$condition=array('id'=>$id);
     $this->db->where($condition);
-	
+
     $results = $this->db->get()->result();
 	if(count($results)>0){
 	return $results[0]->booking_date;
@@ -26,7 +26,7 @@ class Trip_booking_model extends CI_Model {
 
 	function getLatestTariff(){
 	$qry = "SELECT id FROM tariffs  WHERE ".date('Y-m-d')." between from_date and to_date";
-		$result=$this->db->query($qry);	
+		$result=$this->db->query($qry);
 		$result=$result->result_array();
 		if(count($result)>0){
 			return $result[0]['id'];
@@ -41,7 +41,7 @@ class Trip_booking_model extends CI_Model {
 	$this->db->from('trips');
 	$condition=array('id'=>$id);
     $this->db->where($condition);
-	
+
     $results = $this->db->get()->result();
 	if(count($results)>0){
 	return $results[0]->driver_id;
@@ -53,7 +53,7 @@ class Trip_booking_model extends CI_Model {
 	$this->db->from('vehicles');
 	$condition=array('id'=>$id);
     $this->db->where($condition);
-	
+
     $results = $this->db->get()->result();
 	if(count($results)>0){
 	return $results;
@@ -89,7 +89,7 @@ class Trip_booking_model extends CI_Model {
 	}
 
 	function changeDriverstatusWithAppkey($app_key,$data){
-	
+
 	$this->db->where('app_key',$app_key );
 	$this->db->set('updated', 'NOW()', FALSE);
 	$this->db->update("drivers",$data);
@@ -97,7 +97,7 @@ class Trip_booking_model extends CI_Model {
 	}
 
 	function changeDriverstatus($driver_id,$data){
-	
+
 	$this->db->where('id',$driver_id );
 	$this->db->set('updated', 'NOW()', FALSE);
 	$this->db->update("drivers",$data);
@@ -131,8 +131,8 @@ class Trip_booking_model extends CI_Model {
 
 	}
 	function checkInNotifications($app_key,$trip_id){
-		$qry = "SELECT * FROM notifications WHERE app_key= ".mysql_real_escape_string($app_key)." AND trip_id=".mysql_real_escape_string($trip_id);
-		$result=$this->db->query($qry);	
+		$qry = "SELECT * FROM notifications WHERE app_key= '".mysql_real_escape_string($app_key)."' AND trip_id=".mysql_real_escape_string($trip_id);
+		$result=$this->db->query($qry);
 		$num = $result->num_rows();
 		if($num>0){
 			return true;
@@ -142,7 +142,7 @@ class Trip_booking_model extends CI_Model {
 	}
 	function getNotifiedListOfDrivers($id){
 		$qry = "SELECT DISTINCT D.id,D.vehicle_registration_number,D.name,D.mobile FROM notifications AS N LEFT JOIN drivers AS D ON D.app_key=N.app_key WHERE N.trip_id=".mysql_real_escape_string($id)." AND ( N.notification_type_id=".NOTIFICATION_TYPE_NEW_TRIP." OR N.notification_type_id=".NOTIFICATION_TYPE_TRIP_RECCURENT." )";
-		$result=$this->db->query($qry);	
+		$result=$this->db->query($qry);
 		$result=$result->result_array();
 		if(count($result)>0){
 			return $result;
@@ -151,11 +151,11 @@ class Trip_booking_model extends CI_Model {
 		}
 
 	}
-	
+
 	function getNotifiedVehiclesCurrentPositions($id){
 			$qry = "SELECT DISTINCT VL.id,VL.lat,VL.lng,VL.app_key,D.name FROM vehicle_locations_logs AS VL LEFT JOIN notifications AS N ON N.app_key=VL.app_key LEFT JOIN drivers AS D ON D.app_key=VL.app_key WHERE N.trip_id=".mysql_real_escape_string($id)." AND N.notification_type_id=".NOTIFICATION_TYPE_NEW_TRIP." AND VL.id IN (
 SELECT max( id ) FROM vehicle_locations_logs GROUP BY app_key ) ORDER BY VL.created DESC";
-		$result=$this->db->query($qry);	
+		$result=$this->db->query($qry);
 		$result=$result->result_array();
 		if(count($result)>0){
 			return $result;
@@ -167,7 +167,7 @@ SELECT max( id ) FROM vehicle_locations_logs GROUP BY app_key ) ORDER BY VL.crea
 
 	function getTripDirections($id){
 		$qry = "SELECT lat,lng  FROM trip_vehicle_locations_logs  WHERE trip_id=".mysql_real_escape_string($id)." ORDER BY created ASC";
-		$result=$this->db->query($qry);	
+		$result=$this->db->query($qry);
 		$result=$result->result_array();
 		if(count($result)>0){
 			return $result;
@@ -192,8 +192,8 @@ FROM vehicle_locations_logs
 GROUP BY app_key
 )
 AND D.driver_status_id = '".DRIVER_STATUS_ACTIVE."' AND TIMEDIFF( '".date('Y-m-d H:i:s')."', VL.created ) <= '00:05:00'
-HAVING distance < ".mysql_real_escape_string($data['radius'])."  
-ORDER BY VL.created DESC"; 
+HAVING distance < ".mysql_real_escape_string($data['radius'])."
+ORDER BY VL.created DESC";
 
 
 ------
@@ -207,12 +207,12 @@ FROM vehicle_locations_logs
 GROUP BY app_key
 )
 AND D.driver_status_id = '".DRIVER_STATUS_ACTIVE."'
-HAVING distance < '%s'  
+HAVING distance < '%s'
 ORDER BY VL.created DESC",
   mysql_real_escape_string($data['center_lat']),
   mysql_real_escape_string($data['center_lng']),
   mysql_real_escape_string($data['center_lat']),
-  mysql_real_escape_string($data['radius'])); 
+  mysql_real_escape_string($data['radius']));
 	//echo $qry;exit;
 	//inner query with time check
 	/*SELECT max( id )
@@ -226,17 +226,17 @@ GROUP BY app_key
 	//return $result;
 	for($i=0;$i<count($result);$i++){
 	$driver[$i]['app_key']=$result[$i]['app_key'];
-	
+
 	}
 	return $driver;
 	}else{
 	return false;
 	}
-	
+
 	}
 
 
-	
+
 
 
 
@@ -244,13 +244,13 @@ GROUP BY app_key
 	//echo date('Y-m-d H:i:s');exit;
 	$qry = "UPDATE drivers as D LEFT JOIN trips as T ON T.driver_id=D.id  SET D.driver_status_id = ".DRIVER_STATUS_ENGAGED." WHERE  TIMEDIFF(CONCAT(T.pick_up_date,' ',T.pick_up_time), '".date('Y-m-d H:i:s')."' ) <= '00:30:00' AND T.trip_status_id='".TRIP_STATUS_ACCEPTED."' AND D.driver_status_id!= '".DRIVER_STATUS_DISMISSED."'  AND D.driver_status_id !='".DRIVER_STATUS_SUSPENDED."'";
 	$result=$this->db->query($qry);
-	
+
 	}
 
-	
+
 
 	function  bookTrip($data) {
-	
+
 		$this->db->set('created', 'NOW()', FALSE);
 		$this->db->insert('trips',$data);
 		if($this->db->insert_id()>0){
@@ -258,8 +258,8 @@ GROUP BY app_key
 		}else{
 			return false;
 		}
-	 
-    }	
+
+    }
 
 
 	function  updateTrip($data,$id) {
@@ -277,7 +277,7 @@ GROUP BY app_key
 	if($conditon!=''){
 		$this->db->where($conditon);
 	}
-	
+
 	if($orderby!=''){
 		$this->db->order_by($orderby);
 	}
@@ -289,7 +289,7 @@ GROUP BY app_key
 			return false;
 		}
 	}
-	
+
 
 	function getVehiclesArray($condion=''){
 	$this->db->from('vehicles');
@@ -298,9 +298,9 @@ GROUP BY app_key
     $this->db->where($condion);
 	}
     $results = $this->db->get()->result();
-	
+
 				//print_r($results);
-		
+
 			for($i=0;$i<count($results);$i++){
 			$values[$results[$i]->id]=$results[$i]->registration_number;
 			}
