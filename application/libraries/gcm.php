@@ -21,7 +21,7 @@ class GCM {
     /**
      * Sending Push Notification
      */
-    public function send_notification($gcm_id, $response) {
+    public function send_notification($gcm_ids, $response) {
        
 			
 				//$ids[0]=$gcm_id;
@@ -29,7 +29,8 @@ class GCM {
         $url = 'https://android.googleapis.com/gcm/send';
 
         $fields = array(
-            'to' => $gcm_id,
+            'registration_ids' => $gcm_ids,
+			'delay_while_idle' => false,
             'data' => $response
         );
 

@@ -75,13 +75,17 @@ class Trip_booking_model extends CI_Model {
 
 	}
 
-	function getDriverGcmRegId($app_key){
-
-	$qry='SELECT gcm_regid FROM drivers where app_key="'.$app_key.'"';
+	function getDriverGcmRegIds($app_keys){
+	$gcmids = array();
+	$ak_ids = join(',',$app_keys);
+	$qry='SELECT gcm_regid FROM drivers where app_key IN ('.$ak_ids.')';
 	$result=$this->db->query($qry);
 	$result=$result->result_array();
 	if(count($result)>0){
-	return $result;
+	for($gcm_index=0;$gcm_index<count($result);$gcm_index++){
+		$gcmids[]=$result[$gcm_index]['gcm_regid'];
+	}	
+	return $gcmids;
 	}else{
 	return false;
 	}

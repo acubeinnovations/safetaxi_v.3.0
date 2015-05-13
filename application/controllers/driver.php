@@ -315,15 +315,21 @@ class Driver extends CI_Controller {
 			$response['td']=TD_COMMON_MSGS;
 			$response['cmsg']='"'.$data['message'].'"';
 		
-			
+			$app_key = array();
+			$gcm_ids = array();
 			for($driver_index=0;$driver_index<count($drivers);$driver_index++){
-					$app_key=$drivers[$driver_index];
-					
-					$gcm=$this->trip_booking_model->getDriverGcmRegId($app_key);
-					if(isset($gcm[0]['gcm_regid'])){
-					$this->gcm->send_notification($gcm[0]['gcm_regid'], $response);
-					}
-				}
+					$app_key[]=$drivers[$driver_index];
+			}	
+				
+			$gcm=$this->trip_booking_model->getDriverGcmRegIds($app_key);
+			for($gcm_index=0;$gcm_index<count($gcm);$gcm_index++){
+			$gcm_ids[]=$gcm[$gcm_index];
+			}
+			
+			if(isset($gcm[0]['gcm_regid'])){
+			$this->gcm->send_notification($gcm_ids, $response);
+			}
+				
 
 			redirect(base_url().'front-desk/sendNotifications');
 
